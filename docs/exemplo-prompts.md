@@ -6,16 +6,16 @@ Pergunta: **Quantas vendas houve em março de 2026?**
 
 | Configuração | Caracteres da mensagem | Hash do prompt |
 |---|---|---|
-| C0 | 1.561 | `0a561cd19cb2` |
-| C1 | 2.491 | `5f74189085eb` |
-| C2 | 3.250 | `55c26f591b33` |
+| C0 | 1.561 | `461ff1eca664` |
+| C1 | 2.491 | `64aa9b8243da` |
+| C2 | 3.250 | `ba1c025234f2` |
 
 Hash do contexto (igual nas três): `90a994c5b80e`
 
 ## Instruções gerais (idênticas nas três configurações)
 
 ```text
-Você é o assistente de dados do Fala Dados. Sua tarefa é transformar a pergunta de um usuário que não conhece SQL em uma única consulta SQL que responda a essa pergunta a partir das tabelas descritas.
+Você é o assistente de dados do Data Talk. Sua tarefa é transformar a pergunta de um usuário que não conhece SQL em uma única consulta SQL que responda a essa pergunta a partir das tabelas descritas.
 
 Regras para a consulta:
 - Use o dialeto SQL do DuckDB.

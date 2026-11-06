@@ -28,12 +28,12 @@ function gravar(chave, valor) {
 }
 
 const parametro = new URLSearchParams(location.search).get("aba");
-const aba = ref(abas.some((a) => a.id === parametro) ? parametro : ler("fala-dados:aba", "conversa"));
-const avancado = ref(ler("fala-dados:avancado", "nao") === "sim");
+const aba = ref(abas.some((a) => a.id === parametro) ? parametro : ler("data-talk:aba", "conversa"));
+const avancado = ref(ler("data-talk:avancado", "nao") === "sim");
 const versao = ref(0); // muda quando as tabelas mudam, para as telas recarregarem
 
-watch(aba, (v) => gravar("fala-dados:aba", v));
-watch(avancado, (v) => gravar("fala-dados:avancado", v ? "sim" : "nao"));
+watch(aba, (v) => gravar("data-talk:aba", v));
+watch(avancado, (v) => gravar("data-talk:avancado", v ? "sim" : "nao"));
 </script>
 
 <template>
@@ -42,7 +42,7 @@ watch(avancado, (v) => gravar("fala-dados:avancado", v ? "sim" : "nao"));
       <div class="marca">
         <div class="logo"><MessagesSquare /></div>
         <div>
-          <div class="nome">Fala Dados</div>
+          <div class="nome">Data Talk</div>
           <div class="slogan">Fala com seus dados.</div>
         </div>
       </div>

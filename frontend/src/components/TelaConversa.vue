@@ -95,7 +95,7 @@ function aoTeclar(evento) {
       <div v-else-if="trocas.length === 0" class="vazio surgir">
         <div class="selo-icone"><Sparkles /></div>
         <h1>O que você quer saber?</h1>
-        <p>Pergunte como perguntaria a um colega. O Fala Dados consulta as suas tabelas e responde com texto, gráfico e tabela.</p>
+        <p>Pergunte como perguntaria a um colega. O Data Talk consulta as suas tabelas e responde com texto, gráfico e tabela.</p>
         <div class="sugestoes">
           <button v-for="s in SUGESTOES" :key="s.texto" class="sugestao" @click="enviar(s.texto)">
             <component :is="s.icone" />

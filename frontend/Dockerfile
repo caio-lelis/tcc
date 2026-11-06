@@ -1,4 +1,4 @@
-# Frontend do Fala Dados: compilado com Node e servido pelo nginx.
+# Frontend do Data Talk: compilado com Node e servido pelo nginx.
 FROM node:22-alpine AS compilacao
 WORKDIR /app
 COPY package.json package-lock.json ./

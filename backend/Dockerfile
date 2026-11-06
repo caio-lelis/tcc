@@ -1,4 +1,4 @@
-# Backend do Fala Dados: FastAPI + DuckDB.
+# Backend do Data Talk: FastAPI + DuckDB.
 # A estrutura dentro do container imita a do repositório (/app = raiz), para que
 # config.RAIZ, dados/ e experimento/ funcionem do mesmo jeito que fora dele.
 FROM python:3.12-slim

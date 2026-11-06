@@ -1,4 +1,4 @@
-# Decisões de projeto do Fala Dados
+# Decisões de projeto do Data Talk
 
 Registro das decisões tomadas durante a implementação que se ligam às ideias centrais do TCC. Cada uma traz a alternativa descartada, o porquê e onde ela aparece na monografia. Serve de base para a apresentação e para a escrita do TCC2.
 
