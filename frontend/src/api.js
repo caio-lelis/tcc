@@ -44,12 +44,3 @@ export const api = {
   // perguntas (RF04, RF05, RF06)
   perguntar: (corpo) => pedir("POST", "/perguntas", corpo),
 };
-
-export const numero = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });
-
-export function formatar(valor) {
-  if (valor === null || valor === undefined) return "—";
-  if (typeof valor === "number") return numero.format(valor);
-  if (typeof valor === "boolean") return valor ? "sim" : "não";
-  return String(valor);
-}
