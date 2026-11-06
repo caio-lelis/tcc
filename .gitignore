@@ -1,0 +1,26 @@
+# Ambiente Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Bancos DuckDB gerados pela ingestão
+*.duckdb
+*.duckdb.wal
+
+# Dados reais da empresa: nunca versionar (LGPD)
+dados/reais/*
+!dados/reais/.gitkeep
+
+# Segredos (chave da OpenAI etc.)
+.env
+
+# Frontend
+node_modules/
+dist/
+
+# Sistema
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

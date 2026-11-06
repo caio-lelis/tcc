@@ -1,0 +1,22 @@
+# Versões fixas para reprodutibilidade do experimento.
+# Instalar com: pip install -r requirements.txt  (Python 3.12)
+
+# API (Interface de programação)
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+python-multipart==0.0.33    # upload de CSV (RF01)
+
+# Dados
+duckdb==2.0.0               # banco analítico embarcado (Ingestão, Executor)
+sqlglot==30.30.0            # análise do SQL gerado (Validador, RNF01)
+
+# Modelo de linguagem
+openai==3.46.0              # cliente do GPT-5.6 Terra (RF04, RF08)
+python-dotenv==1.2.4        # lê a chave da API do arquivo .env
+
+# Experimento
+PyYAML==6.0.3               # banco de perguntas (perguntas.yaml)
+
+# Testes
+pytest==9.2.0
+httpx==0.28.1               # cliente de teste do FastAPI
