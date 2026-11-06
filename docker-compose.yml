@@ -1,0 +1,30 @@
+# Fala Dados: sobe tudo com
+#   docker compose up --build
+# Interface:            http://localhost:3030   (porta: FALA_DADOS_PORTA)
+# API (documentação):   http://localhost:8000/docs   (porta: FALA_DADOS_PORTA_API)
+
+name: fala-dados
+
+services:
+  backend:
+    build: ./backend
+    env_file: .env  # OPENAI_API_KEY, OPENAI_MODEL, OPENAI_ESFORCO
+    ports:
+      - "127.0.0.1:${FALA_DADOS_PORTA_API:-8000}:8000"
+    volumes:
+      # banco DuckDB, contexto.json e CSVs ficam na máquina, não no container
+      - ./dados:/app/dados
+      # registros de execução (RNF02)
+      - ./experimento:/app/experimento
+      # somente leitura: para registrar o commit do código em cada execução
+      - ./.git:/app/.git:ro
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:${FALA_DADOS_PORTA:-3030}:80"  # só nesta máquina: a API usa a sua chave da OpenAI
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped

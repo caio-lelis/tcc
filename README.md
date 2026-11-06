@@ -8,10 +8,32 @@ Desenvolvido no Trabalho de Conclusão de Curso *"Contexto de negócio e confiab
 
 ## Como rodar
 
-Requer Python 3.12. Na raiz do repositório:
+### Com Docker (recomendado)
+
+Requer Docker com Compose. Na raiz do repositório:
 
 ```bash
 cp .env.example .env                 # e preencha OPENAI_API_KEY
+docker compose up --build -d
+```
+
+| O quê | Onde |
+|---|---|
+| Interface | http://localhost:3030 |
+| API (documentação interativa) | http://localhost:8000/docs |
+
+Para testar, anexe os CSVs de [`dados/exemplo/`](dados/exemplo/) em **Meus dados** e copie as descrições e regras de [`dados/exemplo/README.md`](dados/exemplo/README.md) em **Sobre os dados**.
+
+- **Portas:** só ficam acessíveis nesta máquina (`127.0.0.1`), porque a API usa a sua chave da OpenAI. Para trocar: `FALA_DADOS_PORTA=4000 FALA_DADOS_PORTA_API=8001 docker compose up -d`.
+- **Dados fora do container:** o banco (`dados/fala_dados.duckdb`), o contexto (`dados/contexto.json`) e os registros (`experimento/execucoes/`) ficam nas pastas do repositório, montadas como volumes. Recriar os containers não apaga nada.
+- **Testes no container:** `docker compose run --rm --no-deps -e OPENAI_API_KEY=x backend python -m pytest`
+- **Parar:** `docker compose down`
+
+### Sem Docker (desenvolvimento do backend)
+
+Requer Python 3.12:
+
+```bash
 py -3.12 -m venv backend/.venv
 backend/.venv/Scripts/pip install -r backend/requirements.txt
 
@@ -20,7 +42,7 @@ cd backend
 .venv/Scripts/uvicorn app.main:app --reload
 ```
 
-Com o servidor no ar, a documentação interativa da API fica em http://127.0.0.1:8000/docs. Para testar, anexe os CSVs de [`dados/exemplo/`](dados/exemplo/).
+O frontend em modo de desenvolvimento (`npm run dev` em `frontend/`, com Node 22) repassa `/api` para o backend em `localhost:8000`.
 
 ## Estrutura
 
