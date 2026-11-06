@@ -24,4 +24,5 @@ LINHAS_AMOSTRA = 3  # linhas de amostra por tabela no contexto C0 (vão para a O
 # Onde ficam os arquivos gerados
 PASTA_DADOS = RAIZ / "dados"
 BANCO_DUCKDB = PASTA_DADOS / "fala_dados.duckdb"
+ARQUIVO_CONTEXTO = PASTA_DADOS / "contexto.json"  # descrições e regras (RF02, RF03)
 PASTA_EXECUCOES = RAIZ / "experimento" / "execucoes"  # log (RNF02)
