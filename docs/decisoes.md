@@ -14,6 +14,8 @@ Registro das decisões tomadas durante a implementação que se ligam às ideias
 
 Três consultas válidas, três números plausíveis, só um certo, e o usuário não técnico não tem como saber qual.
 
+**Primeiro sinal real** (sonda de 06/11/2026, `docs/evidencias/2026-11-06-sonda-modelos.md`): na mesma pergunta, o `gpt-5.6-terra` respondeu **11** no C0 (usou `status = 'A'`) e **12** no C2 (aplicou a regra do arrependimento). Teste exploratório, uma execução: ilustração, não resultado.
+
 ---
 
 ## Índice
@@ -34,6 +36,8 @@ Três consultas válidas, três números plausíveis, só um certo, e o usuário
 | D-12 | Testes automatizados sem chamar a API | custo e qualidade |
 | D-13 | Categoria própria para consulta recusada por segurança | validade do experimento |
 | D-14 | Segurança em duas camadas com o parser do próprio DuckDB | segurança |
+| D-15 | Sem temperatura zero: não determinismo tratado pela medição | reprodutibilidade |
+| D-16 | Perguntas discriminantes: interpretações erradas não podem coincidir com o gabarito | validade do experimento |
 
 ---
 
@@ -66,6 +70,14 @@ Três consultas válidas, três números plausíveis, só um certo, e o usuário
 - **Por quê:** um modelo que tenta um `DELETE` revela algo diferente de um modelo que erra a sintaxe: é um risco de segurança, não de competência. Misturar os dois esconderia esse dado nos resultados. Separado, dá para afirmar quantas vezes (se alguma) o modelo tentou algo perigoso em cada configuração.
 - **Na monografia:** Seção 4.6.4 (taxonomia de erros) e discussão de confiabilidade (Seção 2.5).
 
+### D-16 · Perguntas discriminantes: interpretações erradas não podem coincidir com o gabarito
+
+- **Origem:** na sonda de 06/11/2026, o `gpt-5.6-luna` no C0 ignorou a regra do arrependimento e mesmo assim "acertou" o número de março, porque naquele mês nenhum contrato caiu na regra. A acurácia de execução contaria esse caso como acerto.
+- **Decisão:** cada pergunta do banco ganha um campo com as **interpretações erradas plausíveis** (consultas alternativas: sem a regra, com a data errada, contando o código errado…). Antes do congelamento, o harness executa todas e **exige que cada uma dê resultado diferente do gabarito**. Se alguma coincidir, a pergunta é ajustada (outro período, outro recorte) até discriminar.
+- **Alternativa descartada:** confiar só na revisão manual de uma amostra dos acertos, a mitigação original da Tab. 10.
+- **Por quê:** transforma a ameaça "consulta incorreta que coincide com o resultado esperado" numa **mitigação verificável e automática**, aplicada a todas as perguntas, não a uma amostra. A revisão manual continua como verificação complementar. Também força quem escreve o banco a explicitar *qual* erro cada pergunta testa, o que conecta cada pergunta à taxonomia de erros (Q3).
+- **Na monografia:** Seções 3.9 e 4.5 (novo campo na Tab. 7), Tab. 10 (mitigação), Seção 4.6.3.
+
 ---
 
 ## Reprodutibilidade
@@ -81,6 +93,15 @@ Três consultas válidas, três números plausíveis, só um certo, e o usuário
 - **Decisão:** Python 3.12, bibliotecas com versão exata em `backend/requirements.txt`, modelo configurado num único lugar (`.env`), e versão datada (snapshot) no experimento.
 - **Por quê:** o experimento precisa poder ser refeito com o mesmo ambiente. Atualizações silenciosas de bibliotecas ou do modelo mudariam os resultados.
 - **Na monografia:** RNF03; Seções 3.10 e 4.9.
+
+### D-15 · Sem temperatura zero: não determinismo tratado pela medição
+
+- **Fato:** em 06/11/2026, a API da OpenAI recusou `temperature=0` para o `gpt-5.6-luna` e o `gpt-5.6-terra` (`400 - Unsupported parameter: 'temperature' is not supported with this model`). O RNF03, como escrito na proposta, não pode ser cumprido.
+- **Confirmado na mesma data:** os dois modelos aceitam `reasoning.effort`; fixado em `low`, que acertou o C2 nos dois modelos com poucos tokens de raciocínio.
+- **Decisão:** fixar o que o modelo permite fixar (a versão datada e o esforço de raciocínio) e tratar a variação entre execuções **medindo-a**: três repetições por pergunta e configuração, veredito por maioria e consistência entre repetições (Q4), como a proposta já previa.
+- **Alternativa descartada:** trocar por um modelo antigo que aceite temperatura zero. Seria um modelo menos representativo do que uma empresa adotaria hoje, e temperatura zero também não garante determinismo total.
+- **Por quê:** o resultado fica mais honesto, porque mede o assistente como ele de fato se comporta. A estabilidade deixa de ser uma premissa e passa a ser um achado (Q4).
+- **Na monografia:** RNF03, Seções 2.5, 3.7 e 4.6.1, Tab. 10.
 
 ---
 

@@ -37,6 +37,8 @@ Com o servidor no ar, a documentação interativa da API fica em http://127.0.0.
 
 Estimativa para o modelo `gpt-5.6-terra`, feita antes da implementação. O registro de execuções (RNF02) grava os tokens e o custo reais de cada chamada, e esta seção será atualizada com os valores medidos.
 
+> **Medido em 06/11/2026** ([sonda](docs/evidencias/2026-11-06-sonda-modelos.md)): com esforço de raciocínio `low`, uma geração C2 no Terra usou ~1.400 tokens de entrada e ~100 de saída, **US$ 0,004**. É cerca de 6 a 9 vezes menos que a estimativa abaixo, que fica como teto conservador. Os valores definitivos virão do registro de execuções.
+
 **Preço usado:** US$ 2,00 por milhão de tokens de entrada e US$ 12,00 por milhão de tokens de saída (valores de agregadores em nov/2026; **confirmar na [página oficial de preços](https://developers.openai.com/api/docs/pricing)** antes do experimento).
 
 **Tokens por pergunta** (duas chamadas, Seção 3.4 da proposta):

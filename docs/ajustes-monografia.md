@@ -6,12 +6,18 @@ Marque `[x]` quando corrigir.
 
 ## Modelo de linguagem
 
-- [ ] **Temperatura zero pode não ser aceita (RNF03, Seções 3.7, 4.6.1 e Tab. 10).** Modelos de raciocínio da OpenAI costumam não aceitar `temperature=0`. Testar com o `gpt-5.6-terra` assim que o cliente do modelo existir. Se não for aceita: reescrever o RNF03, trocar "temperatura zero" na Seção 4.6.1 e na ameaça "Não determinismo do modelo" (Tab. 10) pelo que for possível fixar (versão datada, esforço de raciocínio, seed), e reforçar que as 3 repetições e a medida de consistência (Q4) são a mitigação principal.
+- [ ] **Temperatura zero NÃO é aceita: confirmado em 06/11/2026 (RNF03, Seções 3.7, 4.6.1 e Tab. 10).** A API respondeu `400 - Unsupported parameter: 'temperature' is not supported with this model` para o `gpt-5.6-luna` e o `gpt-5.6-terra`. Ver `docs/decisoes.md`, D-15. Mudanças no texto:
+  - **RNF03** passa a ser: "Manter fixos, durante o experimento, a versão datada do modelo e o nível de esforço de raciocínio."
+  - **Seção 4.6.1:** trocar "a temperatura (zero)" por "o nível de esforço de raciocínio" entre os fatores mantidos constantes.
+  - **Tab. 10, ameaça "não determinismo do modelo":** mitigação passa a ser "versão datada fixa, esforço de raciocínio fixo, três repetições, veredito por maioria e medida de consistência".
+  - **Seção 2.5 (estabilidade):** registrar que modelos de raciocínio atuais não permitem fixar a temperatura, o que reforça a necessidade de medir a consistência (Q4).
+  - **Confirmado em 06/11/2026:** o esforço de raciocínio é aceito pelos dois modelos e foi fixado em `low`. Evidência em `docs/evidencias/2026-11-06-sonda-modelos.md`.
 - [ ] **Modelo de desenvolvimento x modelo do experimento (Seção 3.7).** Registrar que o desenvolvimento usa o `gpt-5.6-luna` (mais barato) e que o experimento e o estudo com usuários usam o `gpt-5.6-terra`. Os ajustes finais do prompt são feitos no Terra.
 - [ ] **Piloto Luna x Terra (opcional, Seção 3.7).** Se for feito o piloto com 5 perguntas, citar o resultado como justificativa adicional da escolha do modelo.
-- [ ] **Critério "Custo" sem número (Seção 3.7).** Incluir a estimativa: cerca de US$ 0,035 por pergunta e US$ 50 a 120 no total (detalhe no README). Substituir pelos valores medidos pelo registro (RNF02) no TCC2.
+- [ ] **Critério "Custo" sem número (Seção 3.7).** A estimativa inicial (US$ 0,035 por pergunta) ficou bem acima do medido: na sonda, uma geração C2 no Terra com esforço `low` custou US$ 0,004 (cerca de 1.400 tokens de entrada e 100 de saída). Usar os valores medidos pelo registro (RNF02) no TCC2.
+- [ ] **Exemplo real para a Seção 2.4 / Fig. 1 (opcional).** A sonda produziu um caso real do erro da Fig. 1: o Terra respondeu 11 no C0 (`status = 'A'`) e 12 no C2. Pode ilustrar o problema ou a apresentação, deixando claro que é exploratório (uma execução, dados fictícios).
 - [ ] **Referência de preços.** Citar a página oficial de preços da OpenAI (o valor ainda varia entre fontes: US$ 2/12 ou US$ 2,50/15 por milhão de tokens).
-- [ ] **Versão datada (Seções 4.4.2 e 5.4).** Preencher o identificador do snapshot fixado quando for definido.
+- [ ] **Versão datada (Seções 4.4.2 e 5.4).** Preencher o identificador do snapshot fixado quando for definido. Atenção: a API devolve só `gpt-5.6-terra`, sem data (sonda de 06/11/2026); o identificador datado precisa ser encontrado na documentação e configurado explicitamente em `OPENAI_MODEL`.
 - [ ] **Batch API (Seção 4.6.2).** Se o harness usar a Batch API para reduzir custo, mencionar no procedimento (mesmo modelo e parâmetros, só muda a forma de envio).
 
 ## Proposta e arquitetura
@@ -26,6 +32,7 @@ Marque `[x]` quando corrigir.
 - [ ] **Amostra enviada à OpenAI (Seção 3.8).** Deixar explícito que as 3 linhas de amostra de cada tabela fazem parte do prompt em todas as configurações e, portanto, saem da empresa (reforça a anonimização).
 - [ ] **Tecnologias (Seção 3.10).** Citar que as versões das bibliotecas são fixadas no `requirements.txt`. Na descrição do DuckDB, mencionar que o próprio parser dele é usado para validar o SQL gerado (D-14), sem biblioteca extra.
 - [ ] **Validador em duas camadas (Seções 3.3 e 3.8).** Descrever as duas camadas: (1) o validador aceita um único comando de leitura, analisado pelo parser do DuckDB; (2) o executor abre o banco somente leitura, sem acesso a arquivos e com a configuração travada. Ver `docs/decisoes.md`, D-14.
+- [ ] **Perguntas discriminantes (Tab. 7, Seções 3.9, 4.5 e Tab. 10).** Acrescentar à Tab. 7 o campo `consultas_alternativas` (interpretações erradas plausíveis) e descrever a verificação antes do congelamento: cada alternativa precisa dar resultado diferente do gabarito. Na Tab. 10, a mitigação de "consulta incorreta que coincide com o resultado esperado" passa a ser essa verificação, mais a revisão manual de uma amostra. Ver D-16.
 - [ ] **Nova categoria de erro (Seção 4.6.4).** Acrescentar "consulta recusada": consulta barrada pelas camadas de segurança (comando que não é leitura, mais de um comando, acesso a arquivos). Fica separada de "consulta inválida", que passa a significar apenas consultas que o banco não conseguiu executar. Ver D-13.
 - [ ] **Tempo esgotado (Seção 4.6.4).** Decidir como classificar consultas interrompidas pelo limite de 10 s: categoria própria ou dentro de "consulta inválida". O sistema já registra separado (`tempo_esgotado`).
 - [ ] **Rastreabilidade (Seção 3.2 e apêndice).** Usar `docs/rastreabilidade.md` para a tabela que liga cada requisito ao código, aos testes e ao commit.

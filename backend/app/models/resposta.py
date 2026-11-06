@@ -23,6 +23,48 @@ class ResultadoConsulta(BaseModel):
     tempo_ms: float
 
 
+class SugestaoGrafico(BaseModel):
+    """Sugestão do modelo na chamada de geração; conferida depois contra o resultado (RF09)."""
+
+    tipo: Literal["linha", "barra", "indicador", "tabela"]
+    x: str | None = None
+    y: list[str] = []
+
+
+class UsoModelo(BaseModel):
+    """Custo de uma chamada ao modelo, para o registro (RNF02)."""
+
+    modelo: str  # nome devolvido pela API (pode trazer a versão datada)
+    tokens_entrada: int
+    tokens_saida: int  # inclui os tokens de raciocínio
+    tokens_raciocinio: int | None = None
+    custo_usd: float | None = None  # None se o preço do modelo não estiver em config.PRECOS
+    tempo_ms: float
+
+
+class RespostaGeracao(BaseModel):
+    """1ª chamada (Seção 3.4, passo 3): SQL + sugestão de gráfico."""
+
+    sql: str
+    grafico: SugestaoGrafico
+    uso: UsoModelo
+
+
+class RespostaInterpretacao(BaseModel):
+    """2ª chamada (Seção 3.4, passo 7): texto que descreve o resultado obtido."""
+
+    texto: str
+    uso: UsoModelo
+
+
+class ErroModelo(Exception):
+    """Falha na comunicação com a API (rede, saldo, limite de uso, formato).
+
+    NÃO é erro do modelo no experimento: é falha de infraestrutura, e a
+    execução deve ser refeita, não contada como resposta errada.
+    """
+
+
 class FalhaConsulta(Exception):
     """Consulta que não produziu resultado. O fluxo informa ao usuário e NÃO tenta de novo (Seção 3.4)."""
 
