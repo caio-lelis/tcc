@@ -31,7 +31,7 @@ Com o servidor no ar, a documentação interativa da API fica em http://127.0.0.
 | `dados/exemplo/` | tabelas fictícias para desenvolvimento |
 | `dados/reais/` | tabelas da empresa (fora do git) |
 | `frontend/` | interface (Vue + ECharts) |
-| `docs/` | monografia e documentação; [`ajustes-monografia.md`](docs/ajustes-monografia.md) lista o que corrigir no texto |
+| `docs/` | monografia e documentação; [`decisoes.md`](docs/decisoes.md) registra as decisões de projeto e [`ajustes-monografia.md`](docs/ajustes-monografia.md) lista o que corrigir no texto |
 
 ## Custo estimado da API da OpenAI
 

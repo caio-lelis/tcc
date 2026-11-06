@@ -17,6 +17,7 @@ Marque `[x]` quando corrigir.
 ## Proposta e arquitetura
 
 - [ ] **Nome do produto (Seção 3.1).** Apresentar o assistente como **Fala Dados** e usar o nome no restante do texto e nas figuras.
+- [ ] **Formato do esquema no prompt (Seção 3.5 e Fig. 4).** Refazer a Fig. 4 no formato `CREATE TABLE` com descrições em comentários `--` e amostra em bloco `/* */` (ver `docs/decisoes.md`, D-01), e citar Gao et al. (2024) como justificativa do formato.
 - [ ] **Novo requisito RF10 (Tab. 5 e Fig. 2).** "Atualizar uma tabela anexada preservando o contexto já cadastrado": ao reanexar um CSV, as descrições e regras existentes são mantidas, colunas novas aparecem como "sem descrição" e colunas removidas têm a descrição marcada como órfã. Ligar o RF10 ao componente de Ingestão e ao Repositório de contexto.
 - [ ] **Normalização de nomes (Seção 3.3, Ingestão).** Registrar que nomes de tabelas e colunas são convertidos para minúsculas, sem acento e com `_` (ex.: "Data Criação" → `data_criacao`), e que o C0 mostra os nomes normalizados.
 - [ ] **Entrevista de levantamento (Tab. 8, etapa 3; Seção 4.4.3).** Descrever a entrevista com a empresa como procedimento de coleta para definir tabelas, descrições (C1), regras (C2) e perguntas candidatas. Incluir o roteiro (`docs/roteiro-entrevista.md`) como apêndice.
