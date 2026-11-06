@@ -21,6 +21,7 @@ def banco_temporario(tmp_path, monkeypatch):
     caminho = tmp_path / "teste.duckdb"
     monkeypatch.setattr(config, "BANCO_DUCKDB", caminho)
     monkeypatch.setattr(config, "ARQUIVO_CONTEXTO", tmp_path / "contexto.json")
+    monkeypatch.setattr(config, "PASTA_EXECUCOES", tmp_path / "execucoes")
     return caminho
 
 
