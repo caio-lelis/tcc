@@ -20,8 +20,8 @@ const copiado = ref(false);
 
 const sucesso = computed(() => props.resposta?.status === "sucesso");
 const grafico = computed(() => props.resposta?.grafico);
-const temGrafico = computed(() => sucesso.value && ["linha", "barra"].includes(grafico.value?.tipo) && grafico.value.echarts);
-const indicador = computed(() => (sucesso.value && grafico.value?.tipo === "indicador" ? grafico.value.indicador : null));
+const temGrafico = computed(() => sucesso.value && ["linha", "barra"].includes(grafico.value?.tipo) && grafico.value.series?.length);
+const indicadores = computed(() => (sucesso.value && grafico.value?.tipo === "indicador" ? grafico.value.indicadores : []));
 const temLinhas = computed(() => sucesso.value && props.resposta.linhas.length > 0);
 const ROTULO_STATUS = {
   sucesso: "consulta executada",
@@ -66,10 +66,12 @@ async function copiarSql() {
           <template v-else>
             <p v-if="resposta.texto" class="texto">{{ resposta.texto }}</p>
 
-            <!-- número em destaque -->
-            <div v-if="indicador" class="indicador cartao">
-              <div class="indicador-rotulo">{{ nomeLegivel(indicador.rotulo) }}</div>
-              <div class="indicador-valor">{{ formatarNumero(indicador.valor) }}</div>
+            <!-- números em destaque -->
+            <div v-if="indicadores.length" class="indicadores">
+              <div v-for="ind in indicadores" :key="ind.rotulo" class="indicador cartao">
+                <div class="indicador-rotulo">{{ nomeLegivel(ind.rotulo) }}</div>
+                <div class="indicador-valor">{{ typeof ind.valor === "number" ? formatarNumero(ind.valor) : ind.valor ?? "—" }}</div>
+              </div>
             </div>
 
             <!-- gráfico e tabela -->
@@ -80,6 +82,7 @@ async function copiarSql() {
               </div>
               <Grafico v-if="temGrafico && visao === 'grafico'" :grafico="grafico" />
               <TabelaResultado v-else :colunas="resposta.colunas" :linhas="resposta.linhas" />
+              <p v-if="!temGrafico && grafico?.motivo" class="motivo">{{ grafico.motivo }}</p>
               <div class="rodape">
                 <span>{{ resposta.linhas.length }}{{ resposta.truncado ? "+" : "" }} linha{{ resposta.linhas.length === 1 ? "" : "s" }}</span>
                 <span v-if="resposta.truncado" class="selo ambar">resultado cortado no limite de linhas</span>
@@ -95,7 +98,7 @@ async function copiarSql() {
             <div class="linha selos">
               <span class="selo primario">{{ resposta.configuracao }}</span>
               <span class="selo" :class="sucesso ? 'verde' : 'ambar'">{{ ROTULO_STATUS[resposta.status] ?? resposta.status }}</span>
-              <span v-if="grafico" class="selo">gráfico: {{ grafico.tipo }} · {{ grafico.origem === "modelo" ? "sugerido pelo modelo" : "por regra" }}</span>
+              <span v-if="grafico" class="selo">gráfico: {{ grafico.tipo }}{{ grafico.serie ? ` por ${grafico.serie}` : "" }} · {{ grafico.origem === "modelo" ? "sugerido pelo modelo" : "por regra" }}</span>
               <span class="selo">execução {{ resposta.id }}</span>
             </div>
             <div v-if="resposta.sql" class="sql">
@@ -156,7 +159,8 @@ async function copiarSql() {
 .pontos i:nth-child(3) { animation-delay: 0.3s; }
 @keyframes pulsar { 0%, 80%, 100% { opacity: 0.25; transform: scale(0.85); } 40% { opacity: 1; transform: scale(1); } }
 
-.indicador { padding: 20px 24px; width: fit-content; min-width: 240px; position: relative; overflow: hidden; }
+.indicadores { display: flex; flex-wrap: wrap; gap: 12px; }
+.indicador { padding: 20px 24px; width: fit-content; min-width: 220px; position: relative; overflow: hidden; }
 .indicador::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--degrade); }
 .indicador-rotulo { font-size: 0.82rem; font-weight: 600; color: var(--suave); text-transform: uppercase; letter-spacing: 0.05em; }
 .indicador-valor {
@@ -198,6 +202,7 @@ async function copiarSql() {
 }
 .alternador button svg { width: 15px; height: 15px; }
 .alternador button.ativo { background: var(--superficie); color: var(--texto); box-shadow: var(--sombra-sm); }
+.motivo { margin-top: 10px; font-size: 0.82rem; color: var(--suave); }
 .rodape { display: flex; gap: 10px; align-items: center; margin-top: 10px; font-size: 0.82rem; color: var(--muito-suave); }
 
 .tecnico { border-top: 1px dashed var(--borda); padding-top: 12px; }

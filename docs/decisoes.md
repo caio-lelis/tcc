@@ -40,6 +40,7 @@ Três consultas válidas, três números plausíveis, só um certo, e o usuário
 | D-16 | Perguntas discriminantes: interpretações erradas não podem coincidir com o gabarito | validade do experimento |
 | D-17 | Tudo em containers, com dados e registros fora deles | reprodutibilidade |
 | D-18 | Interface com vocabulário do negócio, sem termos técnicos | usabilidade |
+| D-19 | Gráfico escolhido pela estrutura do resultado, com regras de leitura | usabilidade |
 
 ---
 
@@ -183,3 +184,12 @@ Três consultas válidas, três números plausíveis, só um certo, e o usuário
 - **Decisão:** as telas se chamam "Perguntar", "Meus dados" e "Sobre os dados"; descrições são pedidas como "o que esta tabela guarda?" e "o que significa?"; regras com exemplo ("Venda é um contrato assinado…"). SQL, configuração C0/C1/C2, status e hash só aparecem no **modo avançado**. Falhas viram mensagens em português ("Não consegui responder a essa pergunta com segurança").
 - **Por quê:** RNF05 e o público-alvo (usuário não técnico). E, para o experimento, a tela de contexto é o instrumento que produz o C1 e o C2: se ela pedir "descreva o esquema", o usuário não escreve o que um gestor explicaria a um colega, e o contexto medido deixa de representar o uso real (Seção 3.5: as configurações correspondem "exatamente ao que o usuário preenche na interface").
 - **Na monografia:** Seções 3.6, 4.7 e RNF05; capturas de tela da interface no TCC2.
+
+### D-19 · Gráfico escolhido pela estrutura do resultado, com regras de leitura
+
+- **Origem:** na pergunta "Quantas reuniões cada SDR marcou por mês?", o resultado veio em formato longo (uma linha por SDR por mês). O gerador de gráficos da proposta (Seção 3.6: data + número → linha; categoria + número → barra) só conhecia uma série e desenhou 29 barras com os meses repetidos, um gráfico que não respondia à pergunta.
+- **Decisão:** o gerador classifica as colunas em **dimensões** (tempo, categoria, grupo) e **medidas** e escolhe a forma pela estrutura: tempo + grupo + medida vira uma linha por grupo; categoria + grupo vira barras agrupadas; ranking vira barras ordenadas (horizontais com muitas categorias ou nomes longos); uma linha só com poucos números vira indicadores lado a lado. O formato longo é detectado mesmo quando o modelo não percebe (eixo x com valores repetidos e uma coluna de texto sobrando). O modelo também passa a poder indicar a coluna de grupo (`serie`) na sugestão.
+- **Regras de leitura** (boas práticas de visualização): no máximo 8 séries por gráfico (acima disso, tabela com o motivo); medidas de escalas muito diferentes ganham gráficos separados, nunca dois eixos y; ausência de dado não vira zero; linhas sem curvas que passem dos pontos; paleta categórica validada para daltonismo, com rótulos diretos nas linhas e visão em tabela sempre disponível.
+- **Por quê:** para o usuário não técnico, o gráfico é parte da resposta (Seção 3.6), e um gráfico errado sobre um número certo também engana. As regras são determinísticas e testadas, então a escolha do gráfico não depende do modelo acertar a sugestão.
+- **Efeito no experimento:** nenhum na métrica principal (a acurácia avalia só o resultado da consulta). As instruções de geração ganharam uma frase sobre `serie`; como elas são as mesmas em C0, C1 e C2 (D-03), a comparação continua justa. Deve ser congelado antes do experimento.
+- **Na monografia:** Seção 3.6 (regras de escolha do gráfico) e RF09; capturas em `docs/capturas/grafico-*.png`.

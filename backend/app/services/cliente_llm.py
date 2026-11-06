@@ -36,11 +36,12 @@ ESQUEMA_GERACAO = {
         "grafico": {
             "type": "object",
             "additionalProperties": False,
-            "required": ["tipo", "x", "y"],
+            "required": ["tipo", "x", "y", "serie"],
             "properties": {
                 "tipo": {"type": "string", "enum": ["linha", "barra", "indicador", "tabela"]},
                 "x": {"type": ["string", "null"]},
                 "y": {"type": "array", "items": {"type": "string"}},
+                "serie": {"type": ["string", "null"]},
             },
         },
     },

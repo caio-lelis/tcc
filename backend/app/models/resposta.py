@@ -29,17 +29,36 @@ class SugestaoGrafico(BaseModel):
     tipo: Literal["linha", "barra", "indicador", "tabela"]
     x: str | None = None
     y: list[str] = []
+    serie: str | None = None  # coluna que separa os grupos (ex.: um SDR por linha para cada mês)
+
+
+class Serie(BaseModel):
+    nome: str  # nome da medida, ou o valor do grupo (ex.: "Diego Moraes")
+    valores: list[float | None]  # um valor por categoria do eixo x; None = sem dado
+
+
+class Indicador(BaseModel):
+    rotulo: str
+    valor: Any
 
 
 class GraficoFinal(BaseModel):
-    """Gráfico conferido contra o resultado (RF09)."""
+    """Especificação do gráfico, conferida contra o resultado (RF09).
+
+    O backend decide a FORMA e organiza os dados; o frontend só desenha.
+    """
 
     tipo: Literal["linha", "barra", "indicador", "tabela"]
+    origem: Literal["modelo", "regra"]  # a sugestão do modelo foi aceita ou caiu nas regras
     x: str | None = None
     y: list[str] = []
-    origem: Literal["modelo", "regra"]  # a sugestão do modelo foi aceita ou caiu nas regras
-    echarts: dict[str, Any] | None = None  # configuração para linha e barra
-    indicador: dict[str, Any] | None = None  # {"rotulo", "valor"} para indicador
+    serie: str | None = None
+    orientacao: Literal["vertical", "horizontal"] = "vertical"  # barras horizontais para rankings
+    categorias: list[str] = []  # valores do eixo x, na ordem de exibição
+    series: list[Serie] = []
+    escalas_separadas: bool = False  # medidas de escalas muito diferentes: um gráfico por medida
+    indicadores: list[Indicador] = []  # para tipo "indicador": um ou mais números em destaque
+    motivo: str | None = None  # por que caiu em tabela, quando não é óbvio
 
 
 class UsoModelo(BaseModel):
