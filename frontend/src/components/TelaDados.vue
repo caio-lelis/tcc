@@ -208,7 +208,7 @@ const amostraEmLinhas = (t) => t.amostra.map((l) => t.colunas.map((c) => l[c.nom
   text-align: center;
   transition: border-color 0.15s, background 0.15s;
 }
-.soltar:hover, .soltar.arrastando { border-color: #a5b4fc; background: #fafbff; }
+.soltar:hover, .soltar.arrastando { border-color: var(--borda-foco); background: var(--linha-hover); }
 .soltar.arrastando { transform: scale(1.005); }
 .soltar-icone {
   width: 52px;

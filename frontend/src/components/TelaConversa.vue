@@ -151,9 +151,9 @@ function aoTeclar(evento) {
   place-items: center;
   background: var(--degrade);
   color: #fff;
-  box-shadow: 0 14px 30px -10px rgba(99, 102, 241, 0.65);
+  box-shadow: 0 14px 30px -10px rgba(21, 96, 224, 0.6);
 }
-.selo-icone svg { width: 28px; height: 28px; }
+.selo-icone svg { width: 28px; height: 28px; color: var(--menta); }
 
 .sugestoes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 680px; }
 .sugestao {
@@ -172,7 +172,7 @@ function aoTeclar(evento) {
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
-.sugestao:hover { border-color: #c7d2fe; box-shadow: var(--sombra); transform: translateY(-1px); }
+.sugestao:hover { border-color: var(--borda-foco); box-shadow: var(--sombra); transform: translateY(-1px); }
 .sugestao svg { width: 20px; height: 20px; color: var(--primaria); flex-shrink: 0; }
 
 .compositor {
@@ -189,7 +189,7 @@ function aoTeclar(evento) {
   box-shadow: var(--sombra-lg);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
-.caixa:focus-within { border-color: #a5b4fc; box-shadow: var(--sombra-lg), var(--foco); }
+.caixa:focus-within { border-color: var(--borda-foco); box-shadow: var(--sombra-lg), var(--foco); }
 .caixa.desativada { opacity: 0.6; }
 .caixa textarea {
   width: 100%;
@@ -224,10 +224,10 @@ function aoTeclar(evento) {
   border: none;
   display: grid;
   place-items: center;
-  color: #fff;
-  background: var(--degrade);
+  color: var(--azul-noite);
+  background: var(--menta);
   cursor: pointer;
-  box-shadow: 0 6px 14px -6px rgba(99, 102, 241, 0.8);
+  box-shadow: var(--sombra-menta);
   transition: opacity 0.15s, transform 0.1s;
 }
 .enviar:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }

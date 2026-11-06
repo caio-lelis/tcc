@@ -284,7 +284,7 @@ async function removerRegra(regra) {
 .progresso-titulo .ok { width: 18px; height: 18px; color: var(--verde); }
 .porcentagem { font-size: 1.6rem; font-weight: 750; letter-spacing: -0.02em; color: var(--primaria); font-variant-numeric: tabular-nums; }
 .barra { margin-top: 12px; height: 8px; border-radius: 999px; background: var(--superficie-2); border: 1px solid var(--borda); overflow: hidden; }
-.preenchimento { height: 100%; border-radius: 999px; background: var(--degrade); transition: width 0.4s ease; }
+.preenchimento { height: 100%; border-radius: 999px; background: var(--degrade-progresso); transition: width 0.4s ease; }
 .hash { margin-top: 10px; }
 .hash code { font-size: 0.85em; background: var(--superficie-2); padding: 2px 6px; border-radius: 5px; }
 
@@ -347,7 +347,7 @@ async function removerRegra(regra) {
   text-align: left;
   cursor: pointer;
 }
-.sanfona-topo:hover { background: #fcfcfe; }
+.sanfona-topo:hover { background: var(--linha-hover); }
 .sanfona-titulo { min-width: 0; }
 .sanfona-titulo h3 { font-size: 1rem; }
 .sanfona-titulo .pequeno { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 460px; }

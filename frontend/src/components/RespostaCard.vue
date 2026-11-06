@@ -125,7 +125,7 @@ async function copiarSql() {
   background: var(--degrade);
   color: #fff;
   font-weight: 500;
-  box-shadow: 0 6px 18px -8px rgba(99, 102, 241, 0.7);
+  box-shadow: var(--sombra-azul);
 }
 
 .assistente { display: flex; gap: 14px; align-items: flex-start; }
@@ -136,9 +136,9 @@ async function copiarSql() {
   border-radius: 11px;
   display: grid;
   place-items: center;
-  background: var(--primaria-50);
-  color: var(--primaria);
-  border: 1px solid var(--primaria-100);
+  background: var(--azul-profundo);
+  color: var(--menta);
+  border: 1px solid var(--azul-profundo);
 }
 .avatar svg { width: 17px; height: 17px; }
 .corpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding-top: 5px; }

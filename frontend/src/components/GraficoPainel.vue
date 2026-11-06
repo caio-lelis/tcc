@@ -109,7 +109,7 @@ function opcao() {
     xAxis: horizontal.value ? eixoValor : eixoCategoria,
     yAxis: horizontal.value ? eixoCategoria : eixoValor,
     dataZoom: muitosPontos && !horizontal.value
-      ? [{ type: "inside" }, { type: "slider", height: 16, bottom: 4, borderColor: "transparent", fillerColor: "rgba(42,120,214,0.12)", showDetail: false }]
+      ? [{ type: "inside" }, { type: "slider", height: 16, bottom: 4, borderColor: "transparent", fillerColor: "rgba(21,96,224,0.12)", showDetail: false }]
       : [],
     series,
     animationDuration: 500,

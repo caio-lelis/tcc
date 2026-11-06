@@ -2,7 +2,7 @@
 
 /* ------------------------------------------------------------------ tokens */
 :root {
-  --fundo: #f4f5fa;
+  --fundo: #f2f6fc;
   --superficie: #ffffff;
   --superficie-2: #f8f9fc;
   --borda: #e5e7ef;
@@ -13,11 +13,27 @@
   --suave: #64748b;
   --muito-suave: #94a3b8;
 
-  --primaria: #4f46e5;
-  --primaria-escura: #4338ca;
-  --primaria-50: #eef2ff;
-  --primaria-100: #e0e7ff;
-  --degrade: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  /* azul (marca) */
+  --primaria: #1560e0;
+  --primaria-escura: #0d47c4;
+  --primaria-50: #eaf2ff;
+  --primaria-100: #d3e4ff;
+  --azul-profundo: #0b3a9e;
+  --azul-noite: #08245f;
+  --degrade: linear-gradient(135deg, #1e74f0 0%, #0d47c4 100%);
+  --degrade-lateral: linear-gradient(180deg, #1560e0 0%, #0b3a9e 100%);
+
+  /* menta (destaques e ações) */
+  --menta: #3ee9b0;
+  --menta-clara: #8ff5d2;
+  --menta-50: #e7fcf4;
+  --menta-texto: #087a55; /* menta escura para texto sobre branco */
+  --degrade-progresso: linear-gradient(90deg, #1560e0 0%, #3ee9b0 100%);
+
+  --borda-foco: #8db8f7;
+  --sombra-azul: 0 6px 16px -6px rgba(21, 96, 224, 0.55);
+  --sombra-menta: 0 6px 16px -6px rgba(16, 185, 129, 0.55);
+  --linha-hover: #f6f9ff;
 
   --verde: #059669;
   --verde-50: #ecfdf5;
@@ -33,7 +49,7 @@
   --sombra-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
   --sombra: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
   --sombra-lg: 0 20px 40px -12px rgba(15, 23, 42, 0.18);
-  --foco: 0 0 0 4px rgba(99, 102, 241, 0.16);
+  --foco: 0 0 0 4px rgba(21, 96, 224, 0.16);
 
   font-family: "Inter Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
   font-feature-settings: "cv11", "ss01";
@@ -48,7 +64,7 @@
 body { margin: 0; background: var(--fundo); }
 h1, h2, h3, h4 { margin: 0; letter-spacing: -0.015em; color: var(--texto); }
 p { margin: 0; }
-::selection { background: var(--primaria-100); }
+::selection { background: var(--menta-clara); }
 
 /* ------------------------------------------------------------------ botões */
 .botao {
@@ -76,12 +92,13 @@ p { margin: 0; }
 .botao svg { width: 17px; height: 17px; flex-shrink: 0; }
 
 .botao.primario {
-  background: var(--primaria);
-  border-color: var(--primaria);
-  color: #fff;
-  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: var(--menta);
+  border-color: var(--menta);
+  color: var(--azul-noite);
+  font-weight: 650;
+  box-shadow: var(--sombra-menta), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
-.botao.primario:hover:not(:disabled) { background: var(--primaria-escura); border-color: var(--primaria-escura); }
+.botao.primario:hover:not(:disabled) { background: #2fdca2; border-color: #2fdca2; color: var(--azul-noite); }
 .botao.fantasma { border-color: transparent; background: transparent; color: var(--suave); }
 .botao.fantasma:hover:not(:disabled) { background: var(--superficie-2); color: var(--texto); }
 .botao.perigo:hover:not(:disabled) { color: var(--vermelho); background: var(--vermelho-50); border-color: transparent; }
@@ -102,7 +119,7 @@ p { margin: 0; }
 }
 .campo::placeholder { color: var(--muito-suave); }
 .campo:hover { border-color: var(--borda-forte); }
-.campo:focus { outline: none; border-color: #a5b4fc; box-shadow: var(--foco); }
+.campo:focus { outline: none; border-color: var(--borda-foco); box-shadow: var(--foco); }
 textarea.campo { resize: vertical; line-height: 1.5; }
 select.campo { cursor: pointer; }
 
@@ -141,7 +158,7 @@ select.campo { cursor: pointer; }
 }
 .selo svg { width: 13px; height: 13px; }
 .selo.primario { background: var(--primaria-50); color: var(--primaria); border-color: var(--primaria-100); }
-.selo.verde { background: var(--verde-50); color: var(--verde); border-color: #a7f3d0; }
+.selo.verde { background: var(--menta-50); color: var(--menta-texto); border-color: var(--menta-clara); }
 .selo.ambar { background: var(--ambar-50); color: var(--ambar); border-color: var(--ambar-borda); }
 .selo.vermelho { background: var(--vermelho-50); color: var(--vermelho); border-color: #fecaca; }
 
@@ -185,7 +202,7 @@ table.tabela th {
 }
 table.tabela td { padding: 9px 14px; border-bottom: 1px solid #f0f2f7; color: var(--texto-2); white-space: nowrap; }
 table.tabela tr:last-child td { border-bottom: none; }
-table.tabela tbody tr:hover td { background: #fafbff; }
+table.tabela tbody tr:hover td { background: var(--linha-hover); }
 table.tabela .num { text-align: right; font-variant-numeric: tabular-nums; }
 table.tabela .nulo { color: var(--muito-suave); }
 
