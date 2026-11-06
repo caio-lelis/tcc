@@ -10,21 +10,21 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 
 | ID | Requisito | Status | Parte (Tab. 11) | Commit(s) |
 |---|---|---|---|---|
-| RF01 | Anexar tabelas em CSV | ✅ backend · ⬜ tela | D2 | [`415808c`][c-415808c] |
-| RF02 | Descrição de tabelas e colunas | ✅ backend · ⬜ tela | D3 | [`ad5a249`][c-ad5a249] |
-| RF03 | Regras de negócio e métricas | ✅ backend · ⬜ tela | D3 | [`ad5a249`][c-ad5a249] |
-| RF04 | Perguntar e responder em linguagem natural | ✅ backend · ⬜ tela | D5, D8 | [`3467d6f`][c-3467d6f], [`5b928e8`][c-5b928e8] |
-| RF05 | SQL visível só no modo avançado | ✅ backend · ⬜ tela | D8 | [`5b928e8`][c-5b928e8] |
-| RF06 | Selecionar configuração C0, C1 ou C2 | ✅ backend · ⬜ tela | D4 | [`701ff37`][c-701ff37], [`5b928e8`][c-5b928e8] |
+| RF01 | Anexar tabelas em CSV | ✅ | D2 | [`415808c`][c-415808c], [`2668ed8`][c-2668ed8] |
+| RF02 | Descrição de tabelas e colunas | ✅ | D3 | [`ad5a249`][c-ad5a249], [`2668ed8`][c-2668ed8] |
+| RF03 | Regras de negócio e métricas | ✅ | D3 | [`ad5a249`][c-ad5a249], [`2668ed8`][c-2668ed8] |
+| RF04 | Perguntar e responder em linguagem natural | ✅ | D5, D8 | [`3467d6f`][c-3467d6f], [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8] |
+| RF05 | SQL visível só no modo avançado | ✅ | D8 | [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8] |
+| RF06 | Selecionar configuração C0, C1 ou C2 | ✅ | D4 | [`701ff37`][c-701ff37], [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8] |
 | RF07 | Executar banco de perguntas em lote | ⬜ | D10 | |
-| RF08 | Texto interpretativo do resultado | ✅ backend · ⬜ tela | D5 | [`3467d6f`][c-3467d6f], [`5b928e8`][c-5b928e8] |
-| RF09 | Gráfico interativo | 🟡 conferência e configuração ECharts prontas, falta a tela | D7 | [`5b928e8`][c-5b928e8] |
-| RF10 | Atualizar tabela preservando o contexto *(novo)* | ✅ backend · ⬜ tela | D2, D3 | [`415808c`][c-415808c], [`ad5a249`][c-ad5a249] |
+| RF08 | Texto interpretativo do resultado | ✅ | D5 | [`3467d6f`][c-3467d6f], [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8] |
+| RF09 | Gráfico interativo | ✅ | D7 | [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8] |
+| RF10 | Atualizar tabela preservando o contexto *(novo)* | ✅ | D2, D3 | [`415808c`][c-415808c], [`ad5a249`][c-ad5a249], [`2668ed8`][c-2668ed8] |
 | RNF01 | Somente consultas de leitura | ✅ | D6 | [`b494158`][c-b494158] |
 | RNF02 | Registrar prompt, SQL, resultado, tempo e custo | ✅ | D3, D4, D5, D9 | [`ad5a249`][c-ad5a249], [`701ff37`][c-701ff37], [`3467d6f`][c-3467d6f], [`395fff6`][c-395fff6] |
 | RNF03 | Modelo e esforço de raciocínio fixos *(era: temperatura)* | 🟡 esforço fixado, falta a versão datada | D1, D5 | [`e800176`][c-e800176], [`3467d6f`][c-3467d6f] |
 | RNF04 | Limite de tempo e de linhas | ✅ | D1, D6 | [`e800176`][c-e800176], [`b494158`][c-b494158] |
-| RNF05 | Interface em português, para quem não sabe SQL | 🟡 API e mensagens em português, falta a tela | D8 | |
+| RNF05 | Interface em português, para quem não sabe SQL | ✅ | D8 | [`2668ed8`][c-2668ed8] |
 
 ## Detalhe por requisito
 
@@ -82,7 +82,8 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 - **Código:** `services/visualizacao.py` (`montar_grafico`), `models/resposta.py` (`GraficoFinal`)
 - **Testes:** `test_visualizacao.py`
 - **Commit:** [`5b928e8`][c-5b928e8]
-- **Notas:** a sugestão do modelo é conferida contra as colunas do resultado; se inválida, valem as regras da Seção 3.6 (indicador, linha, barra, tabela). A saída traz a configuração do ECharts com zoom (`dataZoom`), valores no cursor (`tooltip`) e legenda para ocultar séries. Falta a tela.
+- **Notas:** a sugestão do modelo é conferida contra as colunas do resultado; se inválida, valem as regras da Seção 3.6 (indicador, linha, barra, tabela). A saída traz a configuração do ECharts com zoom (`dataZoom`), valores no cursor (`tooltip`) e legenda para ocultar séries.
+- **Tela:** `frontend/src/components/Grafico.vue` (ECharts; indicador como número grande), commit [`2668ed8`][c-2668ed8].
 
 ### RF10 · Atualizar uma tabela anexada preservando o contexto *(novo)*
 
@@ -118,6 +119,22 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 - **Testes:** `test_validador_executor.py::test_corta_no_limite_de_linhas_e_avisa`, `::test_interrompe_consulta_demorada`
 - **Commits:** [`e800176`][c-e800176], [`b494158`][c-b494158]
 
+## Interface web e containers
+
+Commit [`2668ed8`][c-2668ed8]. A interface fecha a parte "tela" dos requisitos abaixo.
+
+| Requisito | Tela / arquivo |
+|---|---|
+| RF01, RF10 | **Meus dados**: `frontend/src/components/TelaDados.vue` (anexar, atualizar, ver o que mudou, remover) |
+| RF02, RF03, RF10 | **Sobre os dados**: `frontend/src/components/TelaContexto.vue` (descrições, regras, pendências e descrições guardadas) |
+| RF04, RF08 | **Perguntar**: `frontend/src/components/TelaConversa.vue`, `RespostaCard.vue` |
+| RF05, RF06 | modo avançado: SQL, configuração C0/C1/C2, status e hash (`App.vue`, `TelaConversa.vue`, `RespostaCard.vue`) |
+| RF09 | `frontend/src/components/Grafico.vue` |
+| RNF05 | todas as telas em português e com vocabulário do negócio (D-18) |
+| — | `docker-compose.yml`, `backend/Dockerfile`, `frontend/Dockerfile`, `frontend/nginx.conf` (D-17) |
+
+Verificado em 06/11/2026: 122 testes passando dentro do container; teste de ponta a ponta pelo nginx (anexar os 4 CSVs do modelo de partida, cadastrar contexto, perguntar "Quantas vendas cada closer fez em 2026?" com o `gpt-5.6-luna`), com resposta correta (169 vendas no total) e registro gravado com `versao_codigo`.
+
 ## Histórico de commits
 
 | Commit | Data | Entrega |
@@ -131,6 +148,7 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 | [`3467d6f`][c-3467d6f] | 2026-11-06 | cliente do modelo de linguagem (D5) |
 | [`395fff6`][c-395fff6] | 2026-11-06 | registro de execuções (D9) |
 | [`5b928e8`][c-5b928e8] | 2026-11-06 | fluxo de uma pergunta e conferência do gráfico (D7 backend) |
+| [`2668ed8`][c-2668ed8] | 2026-11-06 | containers e interface web (D3 telas, D7, D8) |
 
 [c-50d196a]: https://github.com/caio-lelis/tcc/commit/50d196aca353915b0dc2410e24405c44ecb94595
 [c-e800176]: https://github.com/caio-lelis/tcc/commit/e80017663e01e875ba312405e70335b80de062a3
@@ -141,5 +159,6 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 [c-3467d6f]: https://github.com/caio-lelis/tcc/commit/3467d6f095b60bec896be5d70a996504511dd30c
 [c-395fff6]: https://github.com/caio-lelis/tcc/commit/395fff6d756ccca72dbb2ea7cf32e623d134b5f2
 [c-5b928e8]: https://github.com/caio-lelis/tcc/commit/5b928e87a3c9355dc085cba6ae80d4f49b084d62
+[c-2668ed8]: https://github.com/caio-lelis/tcc/commit/2668ed84a9b45ed18773c7379c4329248153efb3
 [pr-1]: https://github.com/caio-lelis/tcc/pull/1
 [pr-2]: https://github.com/caio-lelis/tcc/pull/2
