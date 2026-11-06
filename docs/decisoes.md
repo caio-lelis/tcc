@@ -32,6 +32,8 @@ Três consultas válidas, três números plausíveis, só um certo, e o usuário
 | D-10 | Contexto preservado ao atualizar tabelas (RF10) | usabilidade |
 | D-11 | Nomes de tabelas e colunas normalizados | usabilidade |
 | D-12 | Testes automatizados sem chamar a API | custo e qualidade |
+| D-13 | Categoria própria para consulta recusada por segurança | validade do experimento |
+| D-14 | Segurança em duas camadas com o parser do próprio DuckDB | segurança |
 
 ---
 
@@ -56,6 +58,13 @@ Três consultas válidas, três números plausíveis, só um certo, e o usuário
 - **Decisão:** as instruções (papel do assistente, dialeto DuckDB, "apenas SELECT", formato de saída) ficam num arquivo próprio em `backend/app/prompts/` e são as mesmas no C0, no C1 e no C2. Só o bloco de contexto muda.
 - **Por quê:** é o que garante que a diferença de acurácia venha do contexto (Seção 3.5: "todos os demais elementos do prompt [...] serão idênticos"). Em arquivo separado, o texto pode ir para um apêndice e ser auditado.
 - **Na monografia:** Seção 3.5; apêndice com as instruções.
+
+### D-13 · Categoria própria para consulta recusada por segurança
+
+- **Decisão:** quando o validador ou o banco barra uma consulta (comando que altera dados, mais de um comando, leitura de arquivo), a falha é classificada como **"recusada"**, separada de **"inválida"** (o banco não conseguiu executar) e de **"tempo esgotado"**.
+- **Alternativa descartada:** juntar tudo em "consulta inválida", como na taxonomia original da Seção 4.6.4.
+- **Por quê:** um modelo que tenta um `DELETE` revela algo diferente de um modelo que erra a sintaxe: é um risco de segurança, não de competência. Misturar os dois esconderia esse dado nos resultados. Separado, dá para afirmar quantas vezes (se alguma) o modelo tentou algo perigoso em cada configuração.
+- **Na monografia:** Seção 4.6.4 (taxonomia de erros) e discussão de confiabilidade (Seção 2.5).
 
 ---
 
@@ -131,3 +140,10 @@ Três consultas válidas, três números plausíveis, só um certo, e o usuário
 - **Decisão:** todos os testes usam banco temporário e chave falsa; nenhum chama a OpenAI.
 - **Por quê:** testes rodam a cada mudança, de graça, e não dependem de rede. Só o experimento e o uso real gastam API.
 - **Na monografia:** Seção 4.9; parte D11 (Tab. 11).
+
+### D-14 · Segurança em duas camadas com o parser do próprio DuckDB
+
+- **Decisão:** (1) o validador usa o parser do próprio DuckDB para exigir um único comando de leitura, sem executar nada; (2) o executor abre o banco somente leitura, sem acesso a arquivos e com a configuração travada, de modo que a consulta não consegue religar o acesso.
+- **Alternativa descartada:** validar com uma biblioteca externa de análise de SQL (`sqlglot`), prevista inicialmente.
+- **Por quê:** um parser externo pode discordar do banco e recusar uma consulta que o DuckDB executaria normalmente, e isso apareceria no experimento como erro do modelo, contaminando a acurácia. Com o mesmo parser do executor, validação e execução nunca discordam. A segunda camada cobre o que a primeira não vê: um `SELECT * FROM read_csv('C:/...')` é uma leitura válida, mas o banco bloqueia o acesso ao arquivo. Seção 3.8: "o assistente não confiará no texto gerado".
+- **Na monografia:** Seções 3.3 (Validador, Executor), 3.8 e 3.10.

@@ -24,7 +24,11 @@ Marque `[x]` quando corrigir.
 - [ ] **Empresa parceira ainda não definida (Tab. 15 e Seção 5.4).** O risco "tabelas não definidas" passa a incluir "empresa parceira ainda não definida". Mitigação: desenvolvimento com o modelo de partida fictício (`dados/exemplo/`) e entrevista de levantamento assim que houver parceira.
 - [ ] **Limites concretos (RNF04, Seção 3.8).** Informar os valores adotados: até 1.000 linhas por consulta, 10 segundos de tempo máximo, 3 linhas de amostra por tabela no contexto.
 - [ ] **Amostra enviada à OpenAI (Seção 3.8).** Deixar explícito que as 3 linhas de amostra de cada tabela fazem parte do prompt em todas as configurações e, portanto, saem da empresa (reforça a anonimização).
-- [ ] **Tecnologias (Seção 3.10).** Incluir o `sqlglot` (análise do SQL gerado no validador, RNF01) e citar que as versões das bibliotecas são fixadas no `requirements.txt`.
+- [ ] **Tecnologias (Seção 3.10).** Citar que as versões das bibliotecas são fixadas no `requirements.txt`. Na descrição do DuckDB, mencionar que o próprio parser dele é usado para validar o SQL gerado (D-14), sem biblioteca extra.
+- [ ] **Validador em duas camadas (Seções 3.3 e 3.8).** Descrever as duas camadas: (1) o validador aceita um único comando de leitura, analisado pelo parser do DuckDB; (2) o executor abre o banco somente leitura, sem acesso a arquivos e com a configuração travada. Ver `docs/decisoes.md`, D-14.
+- [ ] **Nova categoria de erro (Seção 4.6.4).** Acrescentar "consulta recusada": consulta barrada pelas camadas de segurança (comando que não é leitura, mais de um comando, acesso a arquivos). Fica separada de "consulta inválida", que passa a significar apenas consultas que o banco não conseguiu executar. Ver D-13.
+- [ ] **Tempo esgotado (Seção 4.6.4).** Decidir como classificar consultas interrompidas pelo limite de 10 s: categoria própria ou dentro de "consulta inválida". O sistema já registra separado (`tempo_esgotado`).
+- [ ] **Rastreabilidade (Seção 3.2 e apêndice).** Usar `docs/rastreabilidade.md` para a tabela que liga cada requisito ao código, aos testes e ao commit.
 - [ ] **Repositório (Seção 4.9).** Citar o endereço do repositório: https://github.com/caio-lelis/tcc
 
 ## Elementos pré-textuais (sobras do modelo LaTeX)

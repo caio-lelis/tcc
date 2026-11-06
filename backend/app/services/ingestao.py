@@ -24,7 +24,7 @@ from app.models.tabela import Coluna, ResultadoIngestao, TabelaInfo
 
 # DuckDB permite um único processo escrevendo no arquivo; o lock evita que
 # duas requisições da API abram conexões de escrita ao mesmo tempo.
-_trava = threading.Lock()
+trava_banco = threading.Lock()
 
 _DELIMITADORES = ",;\t|"
 _DECIMAL_COM_VIRGULA = re.compile(r"^-?\d+,\d+$")
@@ -89,7 +89,7 @@ def _opcoes_leitura(texto: str) -> dict[str, str]:
     return opcoes
 
 
-def _para_json(valor: Any) -> Any:
+def para_json(valor: Any) -> Any:
     if isinstance(valor, Decimal):
         return float(valor)
     if isinstance(valor, (date, datetime, time)):
@@ -114,7 +114,7 @@ def _info(con: duckdb.DuckDBPyConnection, tabela: str, nomes_originais: dict[str
     linhas = con.execute(f"SELECT COUNT(*) FROM {_citar(tabela)}").fetchone()[0]
     cursor = con.execute(f"SELECT * FROM {_citar(tabela)} LIMIT ?", [config.LINHAS_AMOSTRA])
     cabecalho = [d[0] for d in cursor.description]
-    amostra = [{c: _para_json(v) for c, v in zip(cabecalho, linha)} for linha in cursor.fetchall()]
+    amostra = [{c: para_json(v) for c, v in zip(cabecalho, linha)} for linha in cursor.fetchall()]
     return TabelaInfo(
         nome=tabela,
         colunas=[Coluna(nome=n, nome_original=nomes_originais.get(n, n), tipo=t) for n, t in tipos.items()],
@@ -159,7 +159,7 @@ def ingerir_csv(conteudo: bytes, nome_arquivo: str, nome_tabela: str | None = No
         leitura = f"read_csv('{caminho_sql}', header = true, sample_size = -1, {args})"
 
         caminho_banco.parent.mkdir(parents=True, exist_ok=True)
-        with _trava, duckdb.connect(str(caminho_banco)) as con:
+        with trava_banco, duckdb.connect(str(caminho_banco)) as con:
             try:
                 nomes_duckdb = [linha[0] for linha in con.execute(f"DESCRIBE SELECT * FROM {leitura}").fetchall()]
             except duckdb.Error as erro:
@@ -193,7 +193,7 @@ def listar_tabelas(caminho_banco: Path | None = None) -> list[TabelaInfo]:
     caminho_banco = caminho_banco or config.BANCO_DUCKDB
     if not caminho_banco.exists():
         return []
-    with _trava, duckdb.connect(str(caminho_banco), read_only=True) as con:
+    with trava_banco, duckdb.connect(str(caminho_banco), read_only=True) as con:
         nomes = [n for (n,) in con.execute(
             "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main' ORDER BY table_name"
         ).fetchall()]
@@ -208,7 +208,7 @@ def remover_tabela(nome: str, caminho_banco: Path | None = None) -> bool:
     caminho_banco = caminho_banco or config.BANCO_DUCKDB
     if not caminho_banco.exists():
         return False
-    with _trava, duckdb.connect(str(caminho_banco)) as con:
+    with trava_banco, duckdb.connect(str(caminho_banco)) as con:
         existia = bool(_colunas_atuais(con, nome))
         con.execute(f"DROP TABLE IF EXISTS {_citar(nome)}")
         return existia
