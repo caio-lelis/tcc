@@ -13,16 +13,16 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 | RF01 | Anexar tabelas em CSV | ✅ backend · ⬜ tela | D2 | [`415808c`][c-415808c] |
 | RF02 | Descrição de tabelas e colunas | ✅ backend · ⬜ tela | D3 | [`ad5a249`][c-ad5a249] |
 | RF03 | Regras de negócio e métricas | ✅ backend · ⬜ tela | D3 | [`ad5a249`][c-ad5a249] |
-| RF04 | Perguntar e responder em linguagem natural | ⬜ | D5, D8 | |
-| RF05 | SQL visível só no modo avançado | ⬜ | D8 | |
-| RF06 | Selecionar configuração C0, C1 ou C2 | 🟡 montagem pronta, falta seleção na API | D4 | [`701ff37`][c-701ff37] |
+| RF04 | Perguntar e responder em linguagem natural | ✅ backend · ⬜ tela | D5, D8 | [`3467d6f`][c-3467d6f], [`5b928e8`][c-5b928e8] |
+| RF05 | SQL visível só no modo avançado | ✅ backend · ⬜ tela | D8 | [`5b928e8`][c-5b928e8] |
+| RF06 | Selecionar configuração C0, C1 ou C2 | ✅ backend · ⬜ tela | D4 | [`701ff37`][c-701ff37], [`5b928e8`][c-5b928e8] |
 | RF07 | Executar banco de perguntas em lote | ⬜ | D10 | |
-| RF08 | Texto interpretativo do resultado | ⬜ | D5 | |
-| RF09 | Gráfico interativo | ⬜ | D7 | |
+| RF08 | Texto interpretativo do resultado | ✅ backend · ⬜ tela | D5 | [`3467d6f`][c-3467d6f], [`5b928e8`][c-5b928e8] |
+| RF09 | Gráfico interativo | 🟡 conferência e configuração ECharts prontas, falta a tela | D7 | [`5b928e8`][c-5b928e8] |
 | RF10 | Atualizar tabela preservando o contexto *(novo)* | ✅ backend · ⬜ tela | D2, D3 | [`415808c`][c-415808c], [`ad5a249`][c-ad5a249] |
 | RNF01 | Somente consultas de leitura | ✅ | D6 | [`b494158`][c-b494158] |
-| RNF02 | Registrar prompt, SQL, resultado, tempo e custo | 🟡 hashes prontos, falta o registro | D3, D4, D9 | [`ad5a249`][c-ad5a249], [`701ff37`][c-701ff37] |
-| RNF03 | Modelo e temperatura fixos | 🟡 configurado, falta confirmar temperatura zero | D1, D5 | [`e800176`][c-e800176] |
+| RNF02 | Registrar prompt, SQL, resultado, tempo e custo | ✅ | D3, D4, D5, D9 | [`ad5a249`][c-ad5a249], [`701ff37`][c-701ff37], [`3467d6f`][c-3467d6f], [`395fff6`][c-395fff6] |
+| RNF03 | Modelo e esforço de raciocínio fixos *(era: temperatura)* | 🟡 esforço fixado, falta a versão datada | D1, D5 | [`e800176`][c-e800176], [`3467d6f`][c-3467d6f] |
 | RNF04 | Limite de tempo e de linhas | ✅ | D1, D6 | [`e800176`][c-e800176], [`b494158`][c-b494158] |
 | RNF05 | Interface em português, para quem não sabe SQL | 🟡 API e mensagens em português, falta a tela | D8 | |
 
@@ -49,12 +49,40 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 - **Commit:** [`ad5a249`][c-ad5a249] · [PR #2][pr-2]
 - **Notas:** cada regra tem `tipo` (regra ou métrica); no C2 vão todas (D-02).
 
+### RF04 · Receber perguntas em linguagem natural e responder
+
+- **Código:** `services/cliente_llm.py` (`ClienteOpenAI.gerar`), `models/resposta.py` (`RespostaGeracao`, `SugestaoGrafico`)
+- **Testes:** `test_cliente_llm.py`
+- **Commit:** [`3467d6f`][c-3467d6f]
+- **Fluxo e rota:** `services/fluxo.py` (os 9 passos da Figura 3), `api/perguntas.py` (`POST /perguntas`); testes em `test_fluxo.py`; commit [`5b928e8`][c-5b928e8].
+- **Notas:** saída JSON estrita `{sql, grafico}`; sem temperatura (D-15); sem nova tentativa em caso de falha (Seção 3.4). Evidência: `docs/evidencias/2026-11-06-fluxo-ponta-a-ponta.md`.
+
+### RF05 · Exibir a consulta SQL gerada apenas em modo avançado
+
+- **Código:** `api/perguntas.py` e `services/fluxo.py` (campo `avancado`; sem ele, a resposta não traz o SQL)
+- **Testes:** `test_fluxo.py::test_modo_avancado_mostra_o_sql`, `::test_rota_perguntas`
+- **Commit:** [`5b928e8`][c-5b928e8]
+
 ### RF06 · Selecionar a configuração de contexto (C0, C1 ou C2)
 
 - **Código:** `services/construtor_contexto.py` (`montar_contexto`, `montar_prompt`), `prompts/instrucoes_geracao.md`
 - **Testes:** `test_construtor_contexto.py`
 - **Commit:** [`701ff37`][c-701ff37]
-- **Notas:** esquema em `CREATE TABLE` (D-01); instruções idênticas nas três configurações (D-03); exemplo real em `docs/exemplo-prompts.md`. Falta a escolha da configuração na rota de perguntas.
+- **Notas:** esquema em `CREATE TABLE` (D-01); instruções idênticas nas três configurações (D-03); exemplo real em `docs/exemplo-prompts.md`. A configuração é escolhida no corpo de `POST /perguntas` (padrão: `config.CONFIGURACAO_PADRAO`), commit [`5b928e8`][c-5b928e8].
+
+### RF08 · Texto em linguagem natural que interpreta o resultado
+
+- **Código:** `services/cliente_llm.py` (`ClienteOpenAI.interpretar`, `montar_entrada_interpretacao`), `prompts/instrucoes_interpretacao.md`
+- **Testes:** `test_cliente_llm.py`
+- **Commit:** [`3467d6f`][c-3467d6f]
+- **Notas:** a 2ª chamada recebe só o resultado obtido (até 50 linhas, com aviso de corte) e é instruída a não inventar valores (Seção 3.4).
+
+### RF09 · Gráfico interativo adequado ao resultado
+
+- **Código:** `services/visualizacao.py` (`montar_grafico`), `models/resposta.py` (`GraficoFinal`)
+- **Testes:** `test_visualizacao.py`
+- **Commit:** [`5b928e8`][c-5b928e8]
+- **Notas:** a sugestão do modelo é conferida contra as colunas do resultado; se inválida, valem as regras da Seção 3.6 (indicador, linha, barra, tabela). A saída traz a configuração do ECharts com zoom (`dataZoom`), valores no cursor (`tooltip`) e legenda para ocultar séries. Falta a tela.
 
 ### RF10 · Atualizar uma tabela anexada preservando o contexto *(novo)*
 
@@ -73,13 +101,16 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 ### RNF02 · Registrar prompt, consulta, resultado, tempo e custo
 
 - **Pronto:** hash do contexto (`services/repositorio.py`, `calcular_hash`, commit [`ad5a249`][c-ad5a249]) e hash do prompt (`services/construtor_contexto.py`, commit [`701ff37`][c-701ff37]); tempo de execução da consulta (`services/executor.py`, commit [`b494158`][c-b494158]).
-- **Pendente:** o componente de registro (D9) e o custo das chamadas (D5).
+- **Pronto também:** tokens, custo e nome do modelo de cada chamada (`UsoModelo`, `services/cliente_llm.py`, commit [`3467d6f`][c-3467d6f]).
+- **Registro:** `services/registro.py`, `models/registro.py`: uma linha JSON por execução em `experimento/execucoes/`, com prompt completo, hashes, SQL, status, resultado, texto, tokens, custo, tempos e commit do código; testes em `test_registro.py`; commit [`395fff6`][c-395fff6].
 
-### RNF03 · Versão do modelo e temperatura fixas
+### RNF03 · Versão do modelo e esforço de raciocínio fixos *(era: temperatura)*
 
-- **Código:** `config.py` (`OPENAI_MODEL`, `TEMPERATURA`), `.env.example`
-- **Commit:** [`e800176`][c-e800176]
-- **Pendente:** confirmar se o `gpt-5.6-terra` aceita temperatura zero (ver `docs/ajustes-monografia.md`).
+- **Código:** `config.py` (`OPENAI_MODEL`, `ESFORCO_RACIOCINIO`), `.env.example`, `services/cliente_llm.py` (nunca envia temperatura)
+- **Testes:** `test_cliente_llm.py::test_geracao_envia_prompt_e_esquema_estrito_sem_temperatura`
+- **Commits:** [`e800176`][c-e800176], [`3467d6f`][c-3467d6f]
+- **Evidência:** `docs/evidencias/2026-11-06-sonda-modelos.md`: temperatura zero recusada pela API; esforço aceito e fixado em `low` (D-15).
+- **Pendente:** identificador da versão datada do modelo.
 
 ### RNF04 · Limitar tempo de execução e número de linhas
 
@@ -97,6 +128,9 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 | [`ad5a249`][c-ad5a249] | 2026-11-06 | repositório de contexto (D3) · [PR #2][pr-2] |
 | [`701ff37`][c-701ff37] | 2026-11-06 | construtor de contexto (D4) |
 | [`b494158`][c-b494158] | 2026-11-06 | validador de SQL e executor (D6) |
+| [`3467d6f`][c-3467d6f] | 2026-11-06 | cliente do modelo de linguagem (D5) |
+| [`395fff6`][c-395fff6] | 2026-11-06 | registro de execuções (D9) |
+| [`5b928e8`][c-5b928e8] | 2026-11-06 | fluxo de uma pergunta e conferência do gráfico (D7 backend) |
 
 [c-50d196a]: https://github.com/caio-lelis/tcc/commit/50d196aca353915b0dc2410e24405c44ecb94595
 [c-e800176]: https://github.com/caio-lelis/tcc/commit/e80017663e01e875ba312405e70335b80de062a3
@@ -104,5 +138,8 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 [c-ad5a249]: https://github.com/caio-lelis/tcc/commit/ad5a24913a4d43068fb035cedc1af5d639c26319
 [c-701ff37]: https://github.com/caio-lelis/tcc/commit/701ff3759e378f0bef449b021ddcfa9d9c0f622f
 [c-b494158]: https://github.com/caio-lelis/tcc/commit/b494158c58aa7215695fe6f89288d470a654c6c0
+[c-3467d6f]: https://github.com/caio-lelis/tcc/commit/3467d6f095b60bec896be5d70a996504511dd30c
+[c-395fff6]: https://github.com/caio-lelis/tcc/commit/395fff6d756ccca72dbb2ea7cf32e623d134b5f2
+[c-5b928e8]: https://github.com/caio-lelis/tcc/commit/5b928e87a3c9355dc085cba6ae80d4f49b084d62
 [pr-1]: https://github.com/caio-lelis/tcc/pull/1
 [pr-2]: https://github.com/caio-lelis/tcc/pull/2
