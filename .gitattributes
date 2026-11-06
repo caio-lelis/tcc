@@ -1,0 +1,7 @@
+# Fim de linha LF em todos os arquivos de texto, em qualquer sistema operacional.
+# Garante que prompts e contextos sejam byte a byte iguais em qualquer máquina.
+* text=auto eol=lf
+
+*.pdf binary
+*.png binary
+*.duckdb binary
