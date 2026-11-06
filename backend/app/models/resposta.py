@@ -1,7 +1,7 @@
 """Formatos da execução de uma consulta (RNF01, RNF04)."""
 from typing import Any, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 CategoriaFalha = Literal["recusada", "invalida", "tempo_esgotado"]
 """Por que uma consulta não produziu resultado (Seção 4.6.4 + D-13):
@@ -29,6 +29,17 @@ class SugestaoGrafico(BaseModel):
     tipo: Literal["linha", "barra", "indicador", "tabela"]
     x: str | None = None
     y: list[str] = []
+
+
+class GraficoFinal(BaseModel):
+    """Gráfico conferido contra o resultado (RF09)."""
+
+    tipo: Literal["linha", "barra", "indicador", "tabela"]
+    x: str | None = None
+    y: list[str] = []
+    origem: Literal["modelo", "regra"]  # a sugestão do modelo foi aceita ou caiu nas regras
+    echarts: dict[str, Any] | None = None  # configuração para linha e barra
+    indicador: dict[str, Any] | None = None  # {"rotulo", "valor"} para indicador
 
 
 class UsoModelo(BaseModel):
@@ -72,3 +83,26 @@ class FalhaConsulta(Exception):
         super().__init__(mensagem)
         self.categoria = categoria
         self.mensagem = mensagem
+
+
+class Pergunta(BaseModel):
+    """Corpo de POST /perguntas."""
+
+    pergunta: str = Field(min_length=1)
+    configuracao: Literal["C0", "C1", "C2"] | None = None  # RF06; padrão: config.CONFIGURACAO_PADRAO
+    avancado: bool = False  # RF05: só no modo avançado a resposta traz o SQL
+
+
+class RespostaFinal(BaseModel):
+    """O que o usuário recebe (Seção 3.6): texto + gráfico + tabela; SQL só no modo avançado."""
+
+    id: str  # id da execução no registro
+    status: str  # sucesso | recusada | invalida | tempo_esgotado | erro_modelo
+    mensagem: str | None = None  # explicação em português quando não há resposta
+    configuracao: str
+    texto: str | None = None
+    grafico: GraficoFinal | None = None
+    colunas: list[str] = []
+    linhas: list[list[Any]] = []
+    truncado: bool = False
+    sql: str | None = None

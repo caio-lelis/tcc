@@ -28,6 +28,10 @@ PRECOS = {
 # Chamada de interpretação: no máximo estas linhas do resultado vão para o modelo
 LINHAS_INTERPRETACAO = 50
 
+# Configuração de contexto usada pela interface quando a pergunta não informa (RF06).
+# No estudo com usuários, será a de melhor desempenho no experimento (Seção 4.7).
+CONFIGURACAO_PADRAO = "C2"
+
 # Limites das consultas (RNF04)
 LIMITE_LINHAS = 1000  # linhas devolvidas ao usuário
 LIMITE_SEGUNDOS = 10  # tempo máximo de uma consulta
