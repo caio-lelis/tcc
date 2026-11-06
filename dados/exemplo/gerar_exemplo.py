@@ -1,7 +1,7 @@
 """Gera o modelo de partida: 4 tabelas fictícias do domínio comercial.
 
 Os dados são inventados (sem LGPD) e servem para desenvolver e testar o
-Fala Dados antes de haver uma empresa parceira. A semente é fixa, então
+Data Talk antes de haver uma empresa parceira. A semente é fixa, então
 os CSVs saem sempre iguais.
 
 As tabelas têm de propósito as "armadilhas" descritas em README.md:

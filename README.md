@@ -1,4 +1,4 @@
-# Fala Dados
+# Data Talk
 
 *Fala com seus dados.*
 
@@ -24,8 +24,8 @@ docker compose up --build -d
 
 Para testar, anexe os CSVs de [`dados/exemplo/`](dados/exemplo/) em **Meus dados** e copie as descrições e regras de [`dados/exemplo/README.md`](dados/exemplo/README.md) em **Sobre os dados**.
 
-- **Portas:** só ficam acessíveis nesta máquina (`127.0.0.1`), porque a API usa a sua chave da OpenAI. Para trocar: `FALA_DADOS_PORTA=4000 FALA_DADOS_PORTA_API=8001 docker compose up -d`.
-- **Dados fora do container:** o banco (`dados/fala_dados.duckdb`), o contexto (`dados/contexto.json`) e os registros (`experimento/execucoes/`) ficam nas pastas do repositório, montadas como volumes. Recriar os containers não apaga nada.
+- **Portas:** só ficam acessíveis nesta máquina (`127.0.0.1`), porque a API usa a sua chave da OpenAI. Para trocar: `DATA_TALK_PORTA=4000 DATA_TALK_PORTA_API=8001 docker compose up -d`.
+- **Dados fora do container:** o banco (`dados/data_talk.duckdb`), o contexto (`dados/contexto.json`) e os registros (`experimento/execucoes/`) ficam nas pastas do repositório, montadas como volumes. Recriar os containers não apaga nada.
 - **Testes no container:** `docker compose run --rm --no-deps -e OPENAI_API_KEY=x backend python -m pytest`
 - **Parar:** `docker compose down`
 

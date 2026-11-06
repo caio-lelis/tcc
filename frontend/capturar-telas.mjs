@@ -1,5 +1,5 @@
 // Capturas de tela da interface para a monografia e a apresentação (docs/capturas/).
-// Requer o Fala Dados no ar (docker compose up) e roda num container do Playwright:
+// Requer o Data Talk no ar (docker compose up) e roda num container do Playwright:
 //   docker run --rm --add-host=host.docker.internal:host-gateway -v "$PWD/docs/capturas:/saida" -v "$PWD/frontend/capturar-telas.mjs:/tmp/capturar.mjs" -w /tmp mcr.microsoft.com/playwright:v1.49.0-noble sh -c "npm i -s playwright@1.49.0 && node capturar.mjs"
 // Atenção: faz duas perguntas reais ao modelo (alguns centavos de dólar).
 import { chromium } from "playwright";

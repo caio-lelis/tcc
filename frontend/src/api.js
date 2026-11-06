@@ -1,4 +1,4 @@
-// Cliente da API do Fala Dados. Todas as rotas passam por /api (nginx ou Vite repassam ao backend).
+// Cliente da API do Data Talk. Todas as rotas passam por /api (nginx ou Vite repassam ao backend).
 const BASE = "/api";
 
 async function pedir(metodo, caminho, corpo) {

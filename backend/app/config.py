@@ -1,4 +1,4 @@
-"""Configuração central do Fala Dados.
+"""Configuração central do Data Talk.
 
 Tudo o que precisa ficar FIXO durante o experimento (RNF03) e os limites
 de segurança (RNF04) vivem aqui, num lugar só.
@@ -39,6 +39,6 @@ LINHAS_AMOSTRA = 3  # linhas de amostra por tabela no contexto C0 (vão para a O
 
 # Onde ficam os arquivos gerados
 PASTA_DADOS = RAIZ / "dados"
-BANCO_DUCKDB = PASTA_DADOS / "fala_dados.duckdb"
+BANCO_DUCKDB = PASTA_DADOS / "data_talk.duckdb"
 ARQUIVO_CONTEXTO = PASTA_DADOS / "contexto.json"  # descrições e regras (RF02, RF03)
 PASTA_EXECUCOES = RAIZ / "experimento" / "execucoes"  # log (RNF02)

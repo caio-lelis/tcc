@@ -27,7 +27,7 @@ class UsoRegistrado(BaseModel):
 
 
 class Execucao(BaseModel):
-    """Uma pergunta respondida (ou não) pelo Fala Dados. Uma linha no arquivo JSONL."""
+    """Uma pergunta respondida (ou não) pelo Data Talk. Uma linha no arquivo JSONL."""
 
     id: str
     quando: datetime  # UTC
@@ -56,4 +56,4 @@ class Execucao(BaseModel):
     uso: UsoRegistrado = Field(default_factory=UsoRegistrado)
     custo_total_usd: float | None = None
     tempo_total_ms: float
-    versao_codigo: str  # commit do Fala Dados que rodou ("-modificado" se havia alterações locais)
+    versao_codigo: str  # commit do Data Talk que rodou ("-modificado" se havia alterações locais)

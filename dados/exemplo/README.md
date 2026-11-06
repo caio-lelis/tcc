@@ -1,6 +1,6 @@
 # Modelo de partida (dados fictícios)
 
-Quatro tabelas inventadas de uma empresa comercial fictícia, usadas para **desenvolver e testar** o Fala Dados e para **mostrar na entrevista** com a empresa parceira ("a estrutura de vocês é parecida com esta?"). Nenhum dado é real.
+Quatro tabelas inventadas de uma empresa comercial fictícia, usadas para **desenvolver e testar** o Data Talk e para **mostrar na entrevista** com a empresa parceira ("a estrutura de vocês é parecida com esta?"). Nenhum dado é real.
 
 Para regerar (sempre sai igual, semente fixa):
 
@@ -15,7 +15,7 @@ python gerar_exemplo.py
 | `reunioes.csv` | 400 | uma reunião agendada, jan–out/2026 |
 | `contratos.csv` | 254 | um contrato enviado a um cliente |
 
-Abaixo está o contexto que um usuário escreveria no Fala Dados. Ele serve de exemplo para os testes das configurações C1 e C2.
+Abaixo está o contexto que um usuário escreveria no Data Talk. Ele serve de exemplo para os testes das configurações C1 e C2.
 
 ## Contexto C1: descrições
 
