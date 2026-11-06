@@ -20,6 +20,7 @@ PASTA_EXEMPLO = Path(__file__).resolve().parents[2] / "dados" / "exemplo"
 def banco_temporario(tmp_path, monkeypatch):
     caminho = tmp_path / "teste.duckdb"
     monkeypatch.setattr(config, "BANCO_DUCKDB", caminho)
+    monkeypatch.setattr(config, "ARQUIVO_CONTEXTO", tmp_path / "contexto.json")
     return caminho
 
 

@@ -8,6 +8,11 @@ __pycache__/
 *.duckdb
 *.duckdb.wal
 
+# Contexto de trabalho (descrições e regras da empresa). A versão congelada
+# para o experimento é copiada explicitamente para experimento/.
+dados/contexto.json
+dados/contexto.json.tmp
+
 # Dados reais da empresa: nunca versionar (LGPD)
 dados/reais/*
 !dados/reais/.gitkeep
