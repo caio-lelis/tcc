@@ -18,7 +18,7 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 | RF06 | Selecionar configuração C0, C1 ou C2 | ✅ | D4 | [`701ff37`][c-701ff37], [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8] |
 | RF07 | Executar banco de perguntas em lote | ⬜ | D10 | |
 | RF08 | Texto interpretativo do resultado | ✅ | D5 | [`3467d6f`][c-3467d6f], [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8] |
-| RF09 | Gráfico interativo | ✅ | D7 | [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8] |
+| RF09 | Gráfico interativo | ✅ | D7 | [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8], [`85ea06e`][c-85ea06e] |
 | RF10 | Atualizar tabela preservando o contexto *(novo)* | ✅ | D2, D3 | [`415808c`][c-415808c], [`ad5a249`][c-ad5a249], [`2668ed8`][c-2668ed8] |
 | RNF01 | Somente consultas de leitura | ✅ | D6 | [`b494158`][c-b494158] |
 | RNF02 | Registrar prompt, SQL, resultado, tempo e custo | ✅ | D3, D4, D5, D9 | [`ad5a249`][c-ad5a249], [`701ff37`][c-701ff37], [`3467d6f`][c-3467d6f], [`395fff6`][c-395fff6] |
@@ -84,6 +84,7 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 - **Commit:** [`5b928e8`][c-5b928e8]
 - **Notas:** a sugestão do modelo é conferida contra as colunas do resultado; se inválida, valem as regras da Seção 3.6 (indicador, linha, barra, tabela). A saída traz a configuração do ECharts com zoom (`dataZoom`), valores no cursor (`tooltip`) e legenda para ocultar séries.
 - **Tela:** `frontend/src/components/Grafico.vue` (ECharts; indicador como número grande), commit [`2668ed8`][c-2668ed8].
+- **Gerador pela estrutura do resultado (D-19):** séries por grupo (formato longo), barras agrupadas, ranking horizontal, vários indicadores, escalas separadas e limite de 8 séries; o backend devolve a especificação (categorias e séries) e o frontend desenha (`GraficoPainel.vue`, `paleta.js`). Commit [`85ea06e`][c-85ea06e]. Capturas em `docs/capturas/grafico-*.png`.
 
 ### RF10 · Atualizar uma tabela anexada preservando o contexto *(novo)*
 
@@ -149,6 +150,8 @@ Verificado em 06/11/2026: 122 testes passando dentro do container; teste de pont
 | [`395fff6`][c-395fff6] | 2026-11-06 | registro de execuções (D9) |
 | [`5b928e8`][c-5b928e8] | 2026-11-06 | fluxo de uma pergunta e conferência do gráfico (D7 backend) |
 | [`2668ed8`][c-2668ed8] | 2026-11-06 | containers e interface web (D3 telas, D7, D8) |
+| [`207cb71`][c-207cb71] | 2026-11-06 | redesenho da interface |
+| [`85ea06e`][c-85ea06e] | 2026-11-06 | gerador de gráficos pela estrutura do resultado (D7) |
 
 [c-50d196a]: https://github.com/caio-lelis/tcc/commit/50d196aca353915b0dc2410e24405c44ecb94595
 [c-e800176]: https://github.com/caio-lelis/tcc/commit/e80017663e01e875ba312405e70335b80de062a3
@@ -160,5 +163,7 @@ Verificado em 06/11/2026: 122 testes passando dentro do container; teste de pont
 [c-395fff6]: https://github.com/caio-lelis/tcc/commit/395fff6d756ccca72dbb2ea7cf32e623d134b5f2
 [c-5b928e8]: https://github.com/caio-lelis/tcc/commit/5b928e87a3c9355dc085cba6ae80d4f49b084d62
 [c-2668ed8]: https://github.com/caio-lelis/tcc/commit/2668ed84a9b45ed18773c7379c4329248153efb3
+[c-207cb71]: https://github.com/caio-lelis/tcc/commit/207cb718d44860d3dfb4c11e489bcf1e86e6ba83
+[c-85ea06e]: https://github.com/caio-lelis/tcc/commit/85ea06e5f6e8d1c080a01f341b1bd141688cb79e
 [pr-1]: https://github.com/caio-lelis/tcc/pull/1
 [pr-2]: https://github.com/caio-lelis/tcc/pull/2
