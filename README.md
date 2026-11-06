@@ -15,4 +15,39 @@ Desenvolvido no Trabalho de Conclusão de Curso *"Contexto de negócio e confiab
 | `dados/exemplo/` | tabelas fictícias para desenvolvimento |
 | `dados/reais/` | tabelas da empresa (fora do git) |
 | `frontend/` | interface (Vue + ECharts) |
-| `docs/` | monografia e documentação |
+| `docs/` | monografia e documentação; [`ajustes-monografia.md`](docs/ajustes-monografia.md) lista o que corrigir no texto |
+
+## Custo estimado da API da OpenAI
+
+Estimativa para o modelo `gpt-5.6-terra`, feita antes da implementação. O registro de execuções (RNF02) grava os tokens e o custo reais de cada chamada, e esta seção será atualizada com os valores medidos.
+
+**Preço usado:** US$ 2,00 por milhão de tokens de entrada e US$ 12,00 por milhão de tokens de saída (valores de agregadores em nov/2026; **confirmar na [página oficial de preços](https://developers.openai.com/api/docs/pricing)** antes do experimento).
+
+**Tokens por pergunta** (duas chamadas, Seção 3.4 da proposta):
+
+| Chamada | Entrada | Saída | Observação |
+|---|---|---|---|
+| Geração | ~4.000 | ~1.500 | instruções + contexto C0/C1/C2 + pergunta; saída inclui tokens de raciocínio do modelo |
+| Interpretação | ~1.500 | ~500 | pergunta + resultado da consulta |
+| **Total** | **~5.500** | **~2.000** | **≈ US$ 0,035 por pergunta** |
+
+O contexto C2 é o mais longo, mas mesmo ele fica muito abaixo da janela do modelo. Quem domina o custo é a saída, sobretudo os tokens de raciocínio.
+
+**Por fase:**
+
+| Fase | Perguntas | Custo estimado |
+|---|---|---|
+| Desenvolvimento e testes manuais | ~1.000 | ~US$ 35 |
+| Experimento de acurácia: 20 perguntas × 3 configurações × 3 repetições = 180, rodado ~3 vezes (piloto + oficial + reserva) | ~540 | ~US$ 19 |
+| Estudo com usuários: 8 participantes × 6 tarefas × ~3 perguntas | ~150 | ~US$ 5 |
+| **Total** | **~1.700** | **~US$ 60** |
+
+Com margem para raciocínio mais longo que o previsto, a faixa realista é **US$ 50 a 120**.
+
+**Modelo por fase:** o desenvolvimento usa o `gpt-5.6-luna` (US$ 1/6 por milhão de tokens, metade do preço), e o experimento e o estudo com usuários usam o `gpt-5.6-terra`. Os ajustes finais do prompt são feitos no Terra. Para trocar, basta mudar `OPENAI_MODEL` no `.env`. Com isso, o total estimado cai para cerca de **US$ 45**.
+
+**Como reduzir, se necessário:**
+- os testes automatizados usam um modelo falso e não gastam nada;
+- a Batch API da OpenAI cobra metade do preço e serve para o harness do experimento, que não precisa de resposta imediata;
+- as instruções gerais são iguais em todas as chamadas, então o cache de prompt reduz o custo da entrada repetida;
+- defina um limite mensal de gasto no painel da OpenAI (Settings → Limits).
