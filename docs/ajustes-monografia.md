@@ -37,6 +37,9 @@ Marque `[x]` quando corrigir.
 - [ ] **Nova categoria de erro (Seção 4.6.4).** Acrescentar "consulta recusada": consulta barrada pelas camadas de segurança (comando que não é leitura, mais de um comando, acesso a arquivos). Fica separada de "consulta inválida", que passa a significar apenas consultas que o banco não conseguiu executar. Ver D-13.
 - [ ] **Tempo esgotado (Seção 4.6.4).** Decidir como classificar consultas interrompidas pelo limite de 10 s: categoria própria ou dentro de "consulta inválida". O sistema já registra separado (`tempo_esgotado`).
 - [ ] **Rastreabilidade (Seção 3.2 e apêndice).** Usar `docs/rastreabilidade.md` para a tabela que liga cada requisito ao código, aos testes e ao commit.
+- [ ] **Regras de escolha do gráfico (Seção 3.6, RF09).** As três regras da proposta (data + número → linha; categoria + número → barra; valor único → indicador) viraram um conjunto maior: formato longo com uma série por grupo, barras agrupadas, ranking ordenado e horizontal, vários indicadores, gráficos separados para escalas diferentes, limite de 8 séries. Reescrever a Seção 3.6 com base em D-19 e incluir as capturas `docs/capturas/grafico-*.png`. O esquema de saída da chamada de geração ganhou o campo `serie` (Seção 3.4).
+- [ ] **Docker e nginx (Seções 3.3, 3.10 e 4.4.2; Fig. 2).** Acrescentar Docker/Docker Compose e nginx às tecnologias; na Fig. 2, o frontend é servido pelo nginx, que repassa `/api` ao backend. Em 4.4.2, "um computador com o assistente instalado" passa a ser "com o assistente em containers (`docker compose up`)". Ver D-17.
+- [ ] **Nomes das telas (Seções 3.3 e 3.6; Fig. 2).** As telas da Fig. 2 ("anexação", "descrições e regras", "conversa") se chamam na interface "Meus dados", "Sobre os dados" e "Perguntar". Ver D-18. Incluir capturas de tela no TCC2.
 - [ ] **Repositório (Seção 4.9).** Citar o endereço do repositório: https://github.com/caio-lelis/tcc
 
 ## Elementos pré-textuais (sobras do modelo LaTeX)

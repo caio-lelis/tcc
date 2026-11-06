@@ -6,9 +6,9 @@ Pergunta: **Quantas vendas houve em março de 2026?**
 
 | Configuração | Caracteres da mensagem | Hash do prompt |
 |---|---|---|
-| C0 | 1.561 | `1ad6c7016032` |
-| C1 | 2.491 | `af8c034bf81e` |
-| C2 | 3.250 | `e256aa0ec03f` |
+| C0 | 1.561 | `0a561cd19cb2` |
+| C1 | 2.491 | `5f74189085eb` |
+| C2 | 3.250 | `55c26f591b33` |
 
 Hash do contexto (igual nas três): `90a994c5b80e`
 
@@ -27,6 +27,7 @@ Regras para a consulta:
 Sugestão de gráfico:
 - Indique o tipo de gráfico mais adequado ao resultado: "linha" (evolução no tempo), "barra" (comparação entre categorias), "indicador" (um único número) ou "tabela" (quando nenhum gráfico ajuda).
 - Indique a coluna do eixo x e as colunas do eixo y, usando os nomes das colunas do resultado da sua consulta.
+- Se o resultado tiver uma coluna que separa grupos (por exemplo, uma linha por vendedor para cada mês), indique-a em "serie" e use uma única coluna no eixo y; caso contrário, deixe "serie" nulo.
 
 Responda apenas no formato JSON solicitado.
 ```

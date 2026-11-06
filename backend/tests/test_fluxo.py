@@ -40,7 +40,7 @@ def test_responde_com_texto_grafico_e_tabela(cenario):
 
     assert r.status == "sucesso" and r.mensagem is None
     assert r.linhas == [[12]] and r.colunas == ["vendas"]
-    assert r.grafico.tipo == "indicador" and r.grafico.indicador["valor"] == 12
+    assert r.grafico.tipo == "indicador" and r.grafico.indicadores[0].valor == 12
     assert r.texto == "Foram 12 vendas em março de 2026."
     assert r.sql is None  # RF05: fora do modo avançado
 
