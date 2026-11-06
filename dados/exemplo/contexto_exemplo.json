@@ -1,0 +1,48 @@
+{
+  "tabelas": {
+    "clientes": {
+      "descricao": "Empresas clientes ou potenciais clientes.",
+      "colunas": {
+        "uf": "Estado da sede.",
+        "segmento": "Ramo de atuação.",
+        "data_cadastro": "Dia em que o cliente entrou no CRM."
+      }
+    },
+    "contratos": {
+      "descricao": "Contratos enviados a clientes.",
+      "colunas": {
+        "vendedor_id": "Closer responsável pelo contrato.",
+        "valor": "Valor bruto em reais.",
+        "desconto": "Desconto concedido, em reais.",
+        "status": "E = enviado (aguardando assinatura), A = assinado, C = cancelado.",
+        "data_criacao": "Dia em que o contrato foi gerado.",
+        "data_assinatura": "Dia em que o cliente assinou (vazia se não assinou).",
+        "data_cancelamento": "Dia do cancelamento (vazia se não foi cancelado). Um contrato pode ser cancelado antes ou depois de assinado."
+      }
+    },
+    "reunioes": {
+      "descricao": "Reuniões comerciais agendadas.",
+      "colunas": {
+        "sdr_id": "Vendedor (SDR) que agendou a reunião.",
+        "closer_id": "Vendedor (closer) que atendeu a reunião.",
+        "situacao": "R = realizada, N = cliente não compareceu, M = remarcada.",
+        "tipo": "1A = primeira reunião com o cliente, RET = reunião de retorno."
+      }
+    },
+    "vendedores": {
+      "descricao": "Pessoas do time comercial.",
+      "colunas": {
+        "equipe": "SDR agenda reuniões; CLOSER conduz a reunião e fecha o contrato.",
+        "ativo": "false para quem já saiu da empresa."
+      }
+    }
+  },
+  "regras": [
+    {"id": 1, "tipo": "regra", "tabelas": ["contratos"], "texto": "Venda é um contrato com data_assinatura preenchida, exceto se foi cancelado em até 7 dias após a assinatura (direito de arrependimento). Cancelamentos depois de 7 dias continuam contando como venda."},
+    {"id": 2, "tipo": "regra", "tabelas": ["contratos"], "texto": "A venda pertence ao mês da data_assinatura, nunca ao da data_criacao."},
+    {"id": 3, "tipo": "metrica", "tabelas": ["contratos"], "texto": "Receita = valor - desconto, somada apenas sobre as vendas."},
+    {"id": 4, "tipo": "regra", "tabelas": ["reunioes"], "texto": "Reunião só conta quando situacao = 'R' e tipo = '1A'. Retornos e remarcações não entram nas métricas."},
+    {"id": 5, "tipo": "regra", "tabelas": ["reunioes", "contratos"], "texto": "Reuniões são atribuídas ao SDR que agendou (sdr_id); vendas e receita são atribuídas ao closer (contratos.vendedor_id)."},
+    {"id": 6, "tipo": "metrica", "tabelas": ["reunioes", "contratos"], "texto": "Taxa de conversão de um período = vendas ÷ reuniões, ambas pelas regras acima."}
+  ]
+}

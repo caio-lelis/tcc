@@ -39,6 +39,20 @@ class Pendencias(BaseModel):
     colunas_orfas: dict[str, list[str]] = {}
 
 
+Configuracao = Literal["C0", "C1", "C2"]
+"""Nível de contexto (Tab. 6): C0 esquema; C1 + descrições; C2 + regras."""
+
+
+class PromptMontado(BaseModel):
+    """O que é enviado ao modelo na chamada de geração (Seção 3.4, passo 3)."""
+
+    configuracao: Configuracao
+    sistema: str  # instruções gerais: idênticas nas três configurações (D-03)
+    usuario: str  # bloco de contexto + pergunta
+    hash_prompt: str  # impressão digital de sistema + usuario (D-04)
+    hash_contexto: str  # impressão digital do contexto cadastrado
+
+
 class ContextoCompleto(BaseModel):
     contexto: Contexto
     pendencias: Pendencias
