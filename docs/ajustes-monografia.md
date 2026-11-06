@@ -17,6 +17,10 @@ Marque `[x]` quando corrigir.
 ## Proposta e arquitetura
 
 - [ ] **Nome do produto (Seção 3.1).** Apresentar o assistente como **Fala Dados** e usar o nome no restante do texto e nas figuras.
+- [ ] **Novo requisito RF10 (Tab. 5 e Fig. 2).** "Atualizar uma tabela anexada preservando o contexto já cadastrado": ao reanexar um CSV, as descrições e regras existentes são mantidas, colunas novas aparecem como "sem descrição" e colunas removidas têm a descrição marcada como órfã. Ligar o RF10 ao componente de Ingestão e ao Repositório de contexto.
+- [ ] **Normalização de nomes (Seção 3.3, Ingestão).** Registrar que nomes de tabelas e colunas são convertidos para minúsculas, sem acento e com `_` (ex.: "Data Criação" → `data_criacao`), e que o C0 mostra os nomes normalizados.
+- [ ] **Entrevista de levantamento (Tab. 8, etapa 3; Seção 4.4.3).** Descrever a entrevista com a empresa como procedimento de coleta para definir tabelas, descrições (C1), regras (C2) e perguntas candidatas. Incluir o roteiro (`docs/roteiro-entrevista.md`) como apêndice.
+- [ ] **Empresa parceira ainda não definida (Tab. 15 e Seção 5.4).** O risco "tabelas não definidas" passa a incluir "empresa parceira ainda não definida". Mitigação: desenvolvimento com o modelo de partida fictício (`dados/exemplo/`) e entrevista de levantamento assim que houver parceira.
 - [ ] **Limites concretos (RNF04, Seção 3.8).** Informar os valores adotados: até 1.000 linhas por consulta, 10 segundos de tempo máximo, 3 linhas de amostra por tabela no contexto.
 - [ ] **Amostra enviada à OpenAI (Seção 3.8).** Deixar explícito que as 3 linhas de amostra de cada tabela fazem parte do prompt em todas as configurações e, portanto, saem da empresa (reforça a anonimização).
 - [ ] **Tecnologias (Seção 3.10).** Incluir o `sqlglot` (análise do SQL gerado no validador, RNF01) e citar que as versões das bibliotecas são fixadas no `requirements.txt`.

@@ -6,6 +6,22 @@ Assistente text-to-SQL para usuários não técnicos: o usuário anexa tabelas e
 
 Desenvolvido no Trabalho de Conclusão de Curso *"Contexto de negócio e confiabilidade de LLMs na análise de dados empresariais: avaliação de um assistente text-to-SQL para usuários não técnicos"* (Engenharia de Software, UnB/FCTE). Proposta em [`docs/proposta.pdf`](docs/proposta.pdf).
 
+## Como rodar
+
+Requer Python 3.12. Na raiz do repositório:
+
+```bash
+cp .env.example .env                 # e preencha OPENAI_API_KEY
+py -3.12 -m venv backend/.venv
+backend/.venv/Scripts/pip install -r backend/requirements.txt
+
+cd backend
+.venv/Scripts/python -m pytest       # testes (não usam a chave nem gastam API)
+.venv/Scripts/uvicorn app.main:app --reload
+```
+
+Com o servidor no ar, a documentação interativa da API fica em http://127.0.0.1:8000/docs. Para testar, anexe os CSVs de [`dados/exemplo/`](dados/exemplo/).
+
 ## Estrutura
 
 | Pasta | Conteúdo |
