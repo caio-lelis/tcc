@@ -17,7 +17,9 @@ async function pedir(metodo, caminho, corpo) {
     const mensagem = Array.isArray(detalhe)
       ? detalhe.map((d) => d.msg).join("; ")
       : detalhe || `Erro ${resposta.status}`;
-    throw new Error(mensagem);
+    const erro = new Error(mensagem);
+    erro.status = resposta.status;
+    throw erro;
   }
   return dados;
 }
@@ -43,4 +45,15 @@ export const api = {
 
   // perguntas (RF04, RF05, RF06)
   perguntar: (corpo) => pedir("POST", "/perguntas", corpo),
+
+  // relatórios ao vivo
+  listarRelatorios: () => pedir("GET", "/relatorios"),
+  criarRelatorio: (titulo) => pedir("POST", "/relatorios", { titulo }),
+  obterRelatorio: (id) => pedir("GET", `/relatorios/${id}`),
+  editarRelatorio: (id, corpo) => pedir("PUT", `/relatorios/${id}`, corpo),
+  excluirRelatorio: (id) => pedir("DELETE", `/relatorios/${id}`),
+  anexarAoRelatorio: (id, corpo) => pedir("POST", `/relatorios/${id}/anexos`, corpo),
+  atualizarBloco: (id, bloco) => pedir("POST", `/relatorios/${id}/blocos/${bloco}/atualizar`),
+  listarVersoes: (id) => pedir("GET", `/relatorios/${id}/versoes`),
+  publicarVersao: (id, corpo) => pedir("POST", `/relatorios/${id}/versoes`, corpo),
 };

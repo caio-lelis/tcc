@@ -42,3 +42,11 @@ PASTA_DADOS = RAIZ / "dados"
 BANCO_DUCKDB = PASTA_DADOS / "data_talk.duckdb"
 ARQUIVO_CONTEXTO = PASTA_DADOS / "contexto.json"  # descrições e regras (RF02, RF03)
 PASTA_EXECUCOES = RAIZ / "experimento" / "execucoes"  # log (RNF02)
+
+# Relatórios ao vivo (além do escopo do TCC): nada aqui afeta o fluxo de perguntas
+URL_POSTGRES = os.getenv("DATA_TALK_POSTGRES_URL", "postgresql://data_talk:data_talk_local@localhost:5432/data_talk")
+S3_ENDPOINT = os.getenv("DATA_TALK_S3_ENDPOINT", "http://localhost:9000")
+S3_CHAVE = os.getenv("DATA_TALK_S3_CHAVE", "data_talk")
+S3_SEGREDO = os.getenv("DATA_TALK_S3_SEGREDO", "data_talk_local")
+S3_BUCKET = os.getenv("DATA_TALK_S3_BUCKET", "data-talk-relatorios")
+LINHAS_TABELA_PDF = 40  # linhas de cada tabela no PDF; o aviso de corte sai no documento

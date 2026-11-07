@@ -1,9 +1,10 @@
-// Monta os gráficos do ECharts a partir da especificação do backend.
+// Monta os gráficos do ECharts. Usado na tela e no PDF, para os dois terem o mesmo desenho.
 import * as echarts from "echarts";
 import { CORES } from "./paleta.js";
 import { formatarCompacto, formatarNumero, nomeLegivel, rotulosDeEixo } from "./formatacao.js";
 
 const FONTE = "Inter Variable, Inter, Segoe UI, sans-serif";
+const LARGURA_PDF = 720;
 
 // O ECharts desenha fora do CSS: as cores vêm dos tokens do tema atual.
 export function coresDoTema() {
@@ -20,6 +21,18 @@ export function coresDoTema() {
     destaque: token("--grafico-destaque"),
   };
 }
+
+// PDF sempre em fundo branco, seja qual for o tema da tela
+const CORES_PDF = {
+  suave: "#64748b",
+  textoForte: "#334155",
+  superficie: "#ffffff",
+  eixo: "#e2e8f0",
+  grade: "#eef1f6",
+  aviso: "#0f172a",
+  muitoSuave: "#94a3b8",
+  destaque: "rgba(15, 23, 42, 0.04)",
+};
 
 export const ehHorizontal = (g) => g.tipo === "barra" && g.orientacao === "horizontal";
 export const alturaDoGrafico = (g) => (ehHorizontal(g) ? Math.max(200, g.categorias.length * 34 + 56) : 300);
@@ -133,4 +146,18 @@ export function montarOpcao(g, cores) {
     animationDuration: 500,
     animationEasing: "cubicOut",
   };
+}
+
+/** Desenha o gráfico em SVG, em cores claras, para entrar no PDF. Um SVG por painel. */
+export function svgsParaPdf(grafico) {
+  return paineisDoGrafico(grafico).map((painel) => {
+    const g = { ...grafico, series: painel.series, rotulosDiretos: usaRotulosDiretos(grafico) };
+    const instancia = echarts.init(null, null, { renderer: "svg", ssr: true, width: LARGURA_PDF, height: alturaDoGrafico(g) });
+    const opcao = montarOpcao(g, CORES_PDF);
+    instancia.setOption({ ...opcao, animation: false, dataZoom: [], grid: { ...opcao.grid, bottom: 4 } });
+    const svg = instancia.renderToSVGString();
+    instancia.dispose();
+    // o <style> do ECharts só traz efeitos de hover, e o backend recusa o CDATA que vem nele
+    return svg.replace(/<style[\s\S]*?<\/style>/g, "");
+  });
 }

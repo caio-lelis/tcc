@@ -16,6 +16,11 @@ python-dotenv==1.2.4        # lê a chave da API do arquivo .env
 # Experimento
 PyYAML==6.0.3               # banco de perguntas (perguntas.yaml)
 
+# Relatórios ao vivo (além do escopo do TCC)
+psycopg[binary]==3.3.8      # Postgres: relatórios editáveis e índice de versões
+boto3==1.43.126             # API S3: PDFs no MinIO
+weasyprint==70.0            # geração dos PDFs
+
 # Testes
 pytest==9.2.0
 httpx==0.28.1               # cliente de teste do FastAPI

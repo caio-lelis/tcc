@@ -2,10 +2,12 @@
 // Uma pergunta e a resposta do assistente (Seção 3.6): texto + gráfico + tabela.
 // SQL, configuração e status só no modo avançado (RF05).
 import { computed, ref } from "vue";
-import { BarChart3, Check, Code2, Copy, Table2, TriangleAlert } from "@lucide/vue";
+import { BarChart3, Check, Code2, Copy, FilePlus2, LoaderCircle, Table2, TriangleAlert } from "@lucide/vue";
 import Grafico from "./Grafico.vue";
 import TabelaResultado from "./TabelaResultado.vue";
 import { formatarNumero, nomeLegivel } from "../formatacao.js";
+import { avisar } from "../avisos.js";
+import { anexarResposta, relatorios } from "../relatorios.js";
 
 const props = defineProps({
   pergunta: { type: String, required: true },
@@ -23,6 +25,20 @@ const grafico = computed(() => props.resposta?.grafico);
 const temGrafico = computed(() => sucesso.value && ["linha", "barra"].includes(grafico.value?.tipo) && grafico.value.series?.length);
 const indicadores = computed(() => (sucesso.value && grafico.value?.tipo === "indicador" ? grafico.value.indicadores : []));
 const temLinhas = computed(() => sucesso.value && props.resposta.linhas.length > 0);
+const anexando = ref(false);
+const anexado = computed(() => relatorios.anexados.has(props.resposta?.id));
+
+async function adicionarAoRelatorio() {
+  anexando.value = true;
+  try {
+    await anexarResposta(props.resposta);
+  } catch (e) {
+    avisar(e.message, "erro");
+  } finally {
+    anexando.value = false;
+  }
+}
+
 const ROTULO_STATUS = {
   sucesso: "consulta executada",
   recusada: "recusada por segurança",
@@ -90,6 +106,13 @@ async function copiarSql() {
             </div>
 
             <p v-else class="texto-suave">Nenhum dado encontrado para essa pergunta.</p>
+
+            <div v-if="temLinhas" class="acoes-resposta">
+              <button class="botao pequeno" :disabled="anexando || anexado" @click="adicionarAoRelatorio">
+                <Check v-if="anexado" /><LoaderCircle v-else-if="anexando" class="girando" /><FilePlus2 v-else />
+                {{ anexado ? "No relatório" : "Adicionar ao relatório" }}
+              </button>
+            </div>
           </template>
 
           <!-- detalhes técnicos -->
@@ -176,6 +199,7 @@ async function copiarSql() {
 }
 
 .painel { padding: 16px 18px 12px; }
+.acoes-resposta { display: flex; }
 .alternador {
   display: inline-flex;
   padding: 3px;

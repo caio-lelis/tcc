@@ -4,8 +4,9 @@
 FROM python:3.12-slim
 
 # git: para registrar em cada execução o commit do código que rodou (versao_codigo)
+# pango e fontes: para o WeasyPrint gerar os PDFs dos relatórios
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends git \
+    && apt-get install -y --no-install-recommends git libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 fonts-inter fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/* \
     && git config --system --add safe.directory /app
 
