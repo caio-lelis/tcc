@@ -2,7 +2,7 @@
 // Uma pergunta e a resposta do assistente (Seção 3.6): texto + gráfico + tabela.
 // SQL, configuração e status só no modo avançado (RF05).
 import { computed, ref } from "vue";
-import { BarChart3, Check, Code2, Copy, Sparkles, Table2, TriangleAlert } from "@lucide/vue";
+import { BarChart3, Check, Code2, Copy, Table2, TriangleAlert } from "@lucide/vue";
 import Grafico from "./Grafico.vue";
 import TabelaResultado from "./TabelaResultado.vue";
 import { formatarNumero, nomeLegivel } from "../formatacao.js";
@@ -47,7 +47,7 @@ async function copiarSql() {
     <div class="pergunta">{{ pergunta }}</div>
 
     <div class="assistente">
-      <div class="avatar"><Sparkles /></div>
+      <div class="avatar"><img src="/favicon.svg" alt="" /></div>
 
       <div class="corpo">
         <!-- carregando -->
@@ -136,11 +136,10 @@ async function copiarSql() {
   border-radius: 11px;
   display: grid;
   place-items: center;
-  background: var(--azul-profundo);
-  color: var(--menta);
-  border: 1px solid var(--azul-profundo);
+  background: var(--primaria-50);
+  border: 1px solid var(--primaria-100);
 }
-.avatar svg { width: 17px; height: 17px; }
+.avatar img { width: 27px; height: 27px; }
 .corpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding-top: 5px; }
 
 .texto { font-size: 1.02rem; line-height: 1.65; color: var(--texto-2); }

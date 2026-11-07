@@ -1,10 +1,12 @@
 <script setup>
 import { ref, watch } from "vue";
-import { BookOpenText, Database, MessageSquareText, MessagesSquare, Wrench } from "@lucide/vue";
+import { BookOpenText, Database, MessageSquareText, Moon, Sun, Wrench } from "@lucide/vue";
+import LogoDataTalk from "./components/LogoDataTalk.vue";
 import TelaConversa from "./components/TelaConversa.vue";
 import TelaDados from "./components/TelaDados.vue";
 import TelaContexto from "./components/TelaContexto.vue";
 import Avisos from "./components/Avisos.vue";
+import { alternarTema, tema } from "./tema.js";
 
 const abas = [
   { id: "conversa", rotulo: "Perguntar", icone: MessageSquareText },
@@ -40,11 +42,8 @@ watch(avancado, (v) => gravar("data-talk:avancado", v ? "sim" : "nao"));
   <div class="app">
     <aside class="lateral">
       <div class="marca">
-        <div class="logo"><MessagesSquare /></div>
-        <div>
-          <div class="nome">Data Talk</div>
-          <div class="slogan">Fala com seus dados.</div>
-        </div>
+        <LogoDataTalk class="logo-lateral" fundo="escuro" />
+        <div class="slogan">Fala com seus dados.</div>
       </div>
 
       <nav>
@@ -61,6 +60,11 @@ watch(avancado, (v) => gravar("data-talk:avancado", v ? "sim" : "nao"));
       </nav>
 
       <div class="espaco"></div>
+
+      <button class="item alternar-tema" :title="tema === 'escuro' ? 'Usar tema claro' : 'Usar tema escuro'" @click="alternarTema">
+        <component :is="tema === 'escuro' ? Sun : Moon" />
+        <span>{{ tema === "escuro" ? "Tema claro" : "Tema escuro" }}</span>
+      </button>
 
       <label class="avancado" :class="{ ligado: avancado }">
         <div class="avancado-texto">
@@ -88,7 +92,7 @@ watch(avancado, (v) => gravar("data-talk:avancado", v ? "sim" : "nao"));
   grid-template-columns: 264px 1fr;
   min-height: 100vh;
   /* fundo azul da barra lateral até o fim da página, mesmo em páginas longas */
-  background: linear-gradient(to right, var(--azul-profundo) 264px, transparent 264px);
+  background: linear-gradient(to right, var(--lateral-fim) 264px, transparent 264px);
 }
 
 .lateral {
@@ -97,8 +101,8 @@ watch(avancado, (v) => gravar("data-talk:avancado", v ? "sim" : "nao"));
   height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 30px;
-  padding: 24px 16px;
+  gap: 26px;
+  padding: 22px 16px 24px;
   background: var(--degrade-lateral);
   color: #fff;
   overflow: hidden;
@@ -117,20 +121,9 @@ watch(avancado, (v) => gravar("data-talk:avancado", v ? "sim" : "nao"));
 }
 .lateral > * { position: relative; }
 
-.marca { display: flex; align-items: center; gap: 12px; padding: 0 8px; }
-.logo {
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
-  display: grid;
-  place-items: center;
-  background: var(--menta);
-  color: var(--azul-noite);
-  box-shadow: 0 8px 20px -6px rgba(62, 233, 176, 0.6);
-}
-.logo svg { width: 22px; height: 22px; }
-.nome { font-weight: 800; font-size: 1.12rem; letter-spacing: -0.02em; color: #fff; }
-.slogan { font-size: 0.8rem; color: var(--menta-clara); font-weight: 500; }
+.marca { display: flex; flex-direction: column; gap: 10px; padding: 0 4px; }
+.logo-lateral { width: 100%; }
+.slogan { font-size: 0.82rem; color: var(--caramelo); font-weight: 550; padding-left: 4px; }
 
 nav { display: flex; flex-direction: column; gap: 4px; }
 .item {
@@ -154,6 +147,8 @@ nav { display: flex; flex-direction: column; gap: 4px; }
 .item:focus-visible { outline: 2px solid var(--menta); outline-offset: 2px; }
 .item.ativo { background: var(--menta); color: var(--azul-noite); font-weight: 680; box-shadow: 0 6px 16px -8px rgba(62, 233, 176, 0.8); }
 .item.ativo svg { color: var(--azul-noite); }
+
+.alternar-tema { margin-bottom: -16px; }
 
 .avancado {
   position: relative;
@@ -203,7 +198,7 @@ nav { display: flex; flex-direction: column; gap: 4px; }
 .conteudo { min-width: 0; }
 
 @media (max-width: 860px) {
-  .app { grid-template-columns: 1fr; }
+  .app { grid-template-columns: 1fr; background: none; }
   .lateral {
     position: sticky;
     height: auto;
@@ -216,6 +211,9 @@ nav { display: flex; flex-direction: column; gap: 4px; }
     border-bottom: 1px solid var(--borda);
     z-index: 20;
   }
+  .marca { flex-direction: row; align-items: center; }
+  .logo-lateral { width: 118px; }
+  .alternar-tema { margin-bottom: 0; }
   nav { flex-direction: row; }
   .item span { display: none; }
   .slogan, .descricao, .espaco { display: none; }

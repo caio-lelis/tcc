@@ -1,7 +1,8 @@
 <script setup>
 // Tela de conversa (RF04): pergunta em linguagem natural; resposta em texto, gráfico e tabela.
 import { nextTick, onMounted, ref, watch } from "vue";
-import { ArrowUp, CalendarRange, Database, LineChart, Sparkles, Trophy, Users } from "@lucide/vue";
+import { ArrowUp, CalendarRange, Database, LineChart, Trophy, Users } from "@lucide/vue";
+import LogoDataTalk from "./LogoDataTalk.vue";
 import RespostaCard from "./RespostaCard.vue";
 import { api } from "../api.js";
 
@@ -85,7 +86,7 @@ function aoTeclar(evento) {
     <div class="rolagem">
       <!-- sem dados ainda -->
       <div v-if="tabelas && tabelas.length === 0" class="vazio surgir">
-        <div class="selo-icone"><Database /></div>
+        <LogoDataTalk class="logo-inicial" />
         <h1>Comece pelos seus dados</h1>
         <p>Anexe as tabelas da sua empresa em CSV para fazer a primeira pergunta.</p>
         <button class="botao primario" @click="$emit('ir-para', 'dados')"><Database /> Anexar dados</button>
@@ -93,7 +94,7 @@ function aoTeclar(evento) {
 
       <!-- boas-vindas -->
       <div v-else-if="trocas.length === 0" class="vazio surgir">
-        <div class="selo-icone"><Sparkles /></div>
+        <LogoDataTalk class="logo-inicial" />
         <h1>O que você quer saber?</h1>
         <p>Pergunte como perguntaria a um colega. O Data Talk consulta as suas tabelas e responde com texto, gráfico e tabela.</p>
         <div class="sugestoes">
@@ -143,17 +144,7 @@ function aoTeclar(evento) {
 .vazio { text-align: center; padding: 8vh 0 24px; display: flex; flex-direction: column; align-items: center; }
 .vazio h1 { font-size: 2rem; font-weight: 750; letter-spacing: -0.03em; margin-top: 18px; }
 .vazio p { color: var(--suave); margin: 10px 0 26px; max-width: 520px; font-size: 1.02rem; }
-.selo-icone {
-  width: 58px;
-  height: 58px;
-  border-radius: 18px;
-  display: grid;
-  place-items: center;
-  background: var(--degrade);
-  color: #fff;
-  box-shadow: 0 14px 30px -10px rgba(21, 96, 224, 0.6);
-}
-.selo-icone svg { width: 28px; height: 28px; color: var(--menta); }
+.logo-inicial { width: min(320px, 80%); }
 
 .sugestoes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 680px; }
 .sugestao {
@@ -179,7 +170,7 @@ function aoTeclar(evento) {
   position: sticky;
   bottom: 0;
   padding: 12px 0 24px;
-  background: linear-gradient(to bottom, rgba(244, 245, 250, 0) 0%, var(--fundo) 30%);
+  background: linear-gradient(to bottom, transparent 0%, var(--fundo) 30%);
 }
 .caixa {
   background: var(--superficie);

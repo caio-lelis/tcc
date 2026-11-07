@@ -3,24 +3,12 @@
 // aqui só se decide o desenho: um gráfico, ou um por medida quando as escalas são muito diferentes.
 import { computed } from "vue";
 import GraficoPainel from "./GraficoPainel.vue";
-import { CORES } from "../paleta.js";
-import { nomeLegivel } from "../formatacao.js";
+import { paineisDoGrafico, usaRotulosDiretos } from "../graficoOpcoes.js";
 
 const props = defineProps({ grafico: { type: Object, required: true } });
 
-// a cor acompanha a série (ordem fixa da paleta), mesmo quando cada série vai para o seu gráfico
-const series = computed(() => props.grafico.series.map((s, i) => ({ ...s, cor: CORES[i % CORES.length] })));
-
-const paineis = computed(() =>
-  props.grafico.escalas_separadas
-    ? series.value.map((s) => ({ titulo: nomeLegivel(s.nome), series: [s] }))
-    : [{ titulo: null, series: series.value }],
-);
-
-// rótulo no fim da linha para até 4 séries: identificar a série não depende só da cor
-const rotulosDiretos = computed(
-  () => props.grafico.tipo === "linha" && !props.grafico.escalas_separadas && series.value.length >= 2 && series.value.length <= 4,
-);
+const paineis = computed(() => paineisDoGrafico(props.grafico));
+const rotulosDiretos = computed(() => usaRotulosDiretos(props.grafico));
 </script>
 
 <template>
