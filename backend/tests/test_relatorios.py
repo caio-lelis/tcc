@@ -87,6 +87,59 @@ def test_html_do_pdf_escapa_o_texto_da_pessoa():
     assert "<b>t</b>" not in html and '<img src="file' not in html
 
 
+def doc(*conteudo):
+    return {"type": "doc", "content": list(conteudo)}
+
+
+def paragrafo(texto, *marcas):
+    return {"type": "paragraph", "content": [{"type": "text", "text": texto, "marks": [{"type": m} for m in marcas]}]}
+
+
+def test_formatacao_vira_html_no_pdf():
+    html = pdf_relatorio._no(doc(
+        paragrafo("forte", "bold", "italic"),
+        {"type": "heading", "attrs": {"level": 2}, "content": [{"type": "text", "text": "Sub"}]},
+        {"type": "bulletList", "content": [{"type": "listItem", "content": [paragrafo("item")]}]},
+        {"type": "blockquote", "content": [paragrafo("citação")]},
+    ))
+    assert "<em><strong>forte</strong></em>" in html
+    assert "<h3>Sub</h3>" in html
+    assert "<ul><li><p>item</p></li></ul>" in html
+    assert "<blockquote><p>citação</p></blockquote>" in html
+
+
+def test_doc_malicioso_nao_vira_html():
+    html = pdf_relatorio._no(doc(
+        paragrafo("<script>alert(1)</script>"),
+        {"type": "script", "content": [{"type": "text", "text": "fica só o texto"}]},
+        {"type": "image", "attrs": {"src": "file:///etc/passwd"}},
+        {"type": "paragraph", "attrs": {"style": "x", "onclick": "y"}, "content": [
+            {"type": "text", "text": "link", "marks": [{"type": "link", "attrs": {"href": "file:///etc/passwd"}}]},
+        ]},
+        {"type": "heading", "attrs": {"level": "<h1 onload=x>"}, "content": []},
+        "nó que não é objeto",
+        {"type": "paragraph", "content": "conteúdo que não é lista"},
+    ))
+    assert "<script" not in html and "file:" not in html and "onclick" not in html and "href" not in html
+    assert "&lt;script&gt;" in html and "fica só o texto" in html and "<p>link</p>" in html
+
+
+def test_doc_profundo_demais_para_no_limite():
+    no = paragrafo("fundo")
+    for _ in range(500):
+        no = {"type": "blockquote", "content": [no]}
+    assert "fundo" not in pdf_relatorio._no(doc(no))
+
+
+def test_bloco_sem_doc_continua_usando_o_texto():
+    assert pdf_relatorio._texto(Bloco(id="a", tipo="texto", texto="antigo")) == "<p>antigo</p>"
+
+
+def test_doc_grande_demais_e_recusado():
+    with pytest.raises(ValueError):
+        Bloco(id="a", tipo="texto", doc=doc(paragrafo("a" * 300_000)))
+
+
 def test_tabela_grande_avisa_o_corte_no_pdf():
     bloco = Bloco(id="a", tipo="resultado", visao="tabela", colunas=["n"], linhas=[[i] for i in range(100)])
     assert f"mostrando {config.LINHAS_TABELA_PDF} de 100 linhas" in pdf_relatorio._origem(bloco)
@@ -111,6 +164,16 @@ def test_edita_e_guarda_os_blocos(cliente):
     assert relido["titulo"] == "Mensal"
     assert [b["texto"] for b in relido["blocos"]] == ["Vendas", "Olá"]
     assert editado["revisao"] == relatorio["revisao"] + 1
+
+
+@integracao
+def test_formatacao_persiste_e_entra_no_pdf(cliente):
+    relatorio = novo(cliente)
+    formatado = doc(paragrafo("Destaque", "bold"))
+    blocos = [{"id": "a", "tipo": "texto", "texto": "Destaque", "doc": formatado}]
+    relatorio = editar(cliente, relatorio, blocos=blocos).json()
+    assert cliente.get(f"/relatorios/{relatorio['id']}").json()["blocos"][0]["doc"] == formatado
+    assert cliente.post(f"/relatorios/{relatorio['id']}/versoes", json={}).status_code == 201
 
 
 @integracao

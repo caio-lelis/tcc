@@ -17,6 +17,13 @@ from app.services.erros_relatorio import ErroEntrada
 FUSO = timezone(timedelta(hours=-3))  # horário de Brasília
 LIMITE_SVG = 2_000_000
 PROIBIDO_SVG = re.compile(r"<!|<\?|<script|<foreignobject|<image|<use\b|\bon\w+\s*=|href\s*=", re.IGNORECASE)
+PROFUNDIDADE_DOC = 12  # listas dentro de listas: além disso, o conteúdo fica de fora
+
+# Lista fechada do que vira HTML no PDF. Qualquer outro elemento mantém só o texto.
+MARCAS = {"bold": "strong", "italic": "em", "underline": "u", "strike": "s"}
+ELEMENTOS = {"paragraph": "p", "bulletList": "ul", "orderedList": "ol", "listItem": "li", "blockquote": "blockquote"}
+SUBTITULOS = {2: "h3", 3: "h4"}  # o título de seção do relatório já é h2
+
 DATA = re.compile(r"^(\d{4})-(\d{2})(?:-(\d{2}))?(?:[T ].*)?$")
 MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 
@@ -32,6 +39,11 @@ h1 { font-size: 23pt; line-height: 1.15; color: #0d3072; margin: 0 0 4pt; }
 .capa { border-bottom: 2.5pt solid #3ee9b0; padding-bottom: 10pt; margin-bottom: 18pt; }
 .capa p { margin: 0; color: #67655f; font-size: 9pt; }
 h2 { font-size: 14pt; color: #0d3072; margin: 18pt 0 6pt; break-after: avoid; }
+h3 { font-size: 11.5pt; color: #0d3072; margin: 10pt 0 4pt; break-after: avoid; }
+h4 { font-size: 10.5pt; color: #0d3072; margin: 8pt 0 3pt; break-after: avoid; }
+ul, ol { margin: 0 0 7pt; padding-left: 16pt; }
+li > p { margin: 0 0 2pt; }
+blockquote { margin: 0 0 7pt; padding: 1pt 0 1pt 9pt; border-left: 2.5pt solid #d3ccbf; color: #475569; }
 p { margin: 0 0 7pt; }
 .resultado { margin: 12pt 0 16pt; break-inside: avoid; }
 .pergunta { font-weight: 600; color: #0d3072; break-after: avoid; }
@@ -89,6 +101,35 @@ def _paragrafos(texto: str) -> str:
     return "".join("<p>" + escape(p).replace("\n", "<br>") + "</p>" for p in partes)
 
 
+def _no(no: Any, nivel: int = 0) -> str:
+    """Converte um nó do Tiptap em HTML. O texto é sempre escapado e nenhum atributo é copiado."""
+    if not isinstance(no, dict) or nivel > PROFUNDIDADE_DOC:
+        return ""
+    tipo = no.get("type")
+    if tipo == "text":
+        html = escape(str(no.get("text", "")))
+        marcas = no.get("marks")
+        for marca in marcas if isinstance(marcas, list) else []:
+            tag = MARCAS.get(marca.get("type")) if isinstance(marca, dict) else None
+            if tag:
+                html = f"<{tag}>{html}</{tag}>"
+        return html
+    if tipo == "hardBreak":
+        return "<br>"
+
+    filhos = no.get("content")
+    html = "".join(_no(f, nivel + 1) for f in filhos) if isinstance(filhos, list) else ""
+    atributos = no.get("attrs")
+    tag = ELEMENTOS.get(tipo)
+    if tipo == "heading" and isinstance(atributos, dict):
+        tag = SUBTITULOS.get(atributos.get("level"))
+    return f"<{tag}>{html}</{tag}>" if tag else html
+
+
+def _texto(bloco: Bloco) -> str:
+    return _no(bloco.doc) if bloco.doc else _paragrafos(bloco.texto)
+
+
 def _tabela(bloco: Bloco) -> str:
     linhas = bloco.linhas[: config.LINHAS_TABELA_PDF]
     numerica = [any(isinstance(l[j], (int, float)) and not isinstance(l[j], bool) for l in bloco.linhas if j < len(l))
@@ -135,9 +176,9 @@ def _bloco(bloco: Bloco, svgs: list[str]) -> str:
     if bloco.tipo == "titulo":
         return f"<h2>{escape(bloco.texto)}</h2>" if bloco.texto.strip() else ""
     if bloco.tipo == "texto":
-        return _paragrafos(bloco.texto)
+        return _texto(bloco)
     pergunta = f'<p class="pergunta">{escape(bloco.pergunta)}</p>' if bloco.pergunta else ""
-    return f'<section class="resultado">{pergunta}{_paragrafos(bloco.texto)}{_dados(bloco, svgs)}{_origem(bloco)}</section>'
+    return f'<section class="resultado">{pergunta}{_texto(bloco)}{_dados(bloco, svgs)}{_origem(bloco)}</section>'
 
 
 def montar_html(relatorio: Relatorio, graficos: dict[str, list[str]], numero: int) -> str:

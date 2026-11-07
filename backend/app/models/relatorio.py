@@ -3,20 +3,23 @@
 Um relatório é uma lista de blocos editáveis. O SQL de cada resultado NÃO faz parte
 do bloco: fica guardado no servidor, e o navegador nunca o envia nem o recebe.
 """
+import json
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.models.resposta import GraficoFinal
 
 LIMITE_BLOCOS = 200
+LIMITE_DOC = 200_000  # caracteres do texto formatado de um bloco, em JSON
 
 
 class Bloco(BaseModel):
     id: str = Field(min_length=1, max_length=64)
     tipo: Literal["titulo", "texto", "resultado"]
-    texto: str = Field(default="", max_length=50_000)
+    texto: str = Field(default="", max_length=50_000)  # sem formatação: busca e blocos antigos
+    doc: dict[str, Any] | None = None  # texto formatado, em JSON do Tiptap; nunca HTML
 
     # só em blocos do tipo "resultado": a foto dos dados no momento em que foi anexado
     pergunta: str | None = None
@@ -26,6 +29,13 @@ class Bloco(BaseModel):
     truncado: bool = False
     visao: Literal["grafico", "tabela"] = "grafico"
     dados_em: datetime | None = None  # quando estes números foram consultados
+
+    @field_validator("doc")
+    @classmethod
+    def limitar_doc(cls, doc: dict[str, Any] | None) -> dict[str, Any] | None:
+        if doc is not None and len(json.dumps(doc)) > LIMITE_DOC:
+            raise ValueError("O texto deste bloco é longo demais.")
+        return doc
 
 
 class Relatorio(BaseModel):

@@ -100,6 +100,8 @@ monta um documento editável ao lado da conversa. A aba **Relatórios** lista os
 - **Postgres** guarda os relatórios editáveis, o SQL de cada resultado e o índice de versões.
 - **MinIO** (API S3) guarda os PDFs: cada exportação é uma versão nova e imutável.
 - **DuckDB** não guarda nada de relatórios: uma consulta gerada pelo modelo não pode lê-los.
+- Os textos aceitam negrito, itálico, sublinhado, tachado, subtítulos, listas e citações. Ficam guardados
+  como JSON do Tiptap, nunca como HTML; o PDF só converte uma lista fechada de elementos.
 - **Atualizar números** roda de novo a consulta guardada no servidor. Não chama o modelo e não
   escreve no registro de execuções. O navegador nunca envia nem recebe esse SQL.
 

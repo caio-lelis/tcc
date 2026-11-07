@@ -6,6 +6,7 @@ import {
   RefreshCw, Table2, Trash2, Type,
 } from "@lucide/vue";
 import Grafico from "./Grafico.vue";
+import TextoRico from "./TextoRico.vue";
 import TabelaResultado from "./TabelaResultado.vue";
 import { formatarNumero, formatarValor, nomeLegivel } from "../formatacao.js";
 import {
@@ -19,6 +20,7 @@ const temResultados = computed(() => atual.value.blocos.some((b) => b.tipo === "
 const arrastando = ref(null);
 const destino = ref(null);
 const editor = ref(null);
+const blocoNovo = ref(null); // o bloco recém-criado recebe o cursor
 
 const SITUACAO = {
   salvo: "Salvo",
@@ -51,9 +53,17 @@ const vAltura = {
 
 async function novoBloco(tipo) {
   adicionarBloco(tipo);
+  blocoNovo.value = atual.value.blocos[atual.value.blocos.length - 1].id;
+  if (tipo !== "titulo") return; // o editor de texto pega o foco ao nascer
   await nextTick();
   const campos = editor.value.querySelectorAll(".bloco textarea");
   campos[campos.length - 1]?.focus();
+}
+
+function aplicarTexto(bloco, { doc, texto }) {
+  bloco.doc = doc;
+  bloco.texto = texto;
+  marcarAlterado();
 }
 
 function trocarVisao(bloco, visao) {
@@ -128,11 +138,11 @@ function soltar(indice) {
       </div>
 
       <textarea v-if="b.tipo === 'titulo'" v-model="b.texto" v-altura class="campo-titulo" rows="1" placeholder="Título da seção" @input="aoDigitar"></textarea>
-      <textarea v-else-if="b.tipo === 'texto'" v-model="b.texto" v-altura class="campo-texto" rows="2" placeholder="Escreva aqui…" @input="aoDigitar"></textarea>
+      <TextoRico v-else-if="b.tipo === 'texto'" :doc="b.doc" :texto="b.texto" :autofoco="blocoNovo === b.id" @alterado="aplicarTexto(b, $event)" />
 
       <template v-else>
         <p class="pergunta">{{ b.pergunta }}</p>
-        <textarea v-model="b.texto" v-altura class="campo-texto" rows="1" placeholder="Comente este resultado…" @input="aoDigitar"></textarea>
+        <TextoRico class="comentario" :doc="b.doc" :texto="b.texto" dica="Comente este resultado…" @alterado="aplicarTexto(b, $event)" />
 
         <div v-if="indicadores(b).length" class="numeros">
           <div v-for="ind in indicadores(b)" :key="ind.rotulo" class="numero">
@@ -265,7 +275,7 @@ textarea:focus { outline: none; }
 textarea::placeholder { color: var(--muito-suave); }
 .campo-titulo { font-size: 1.2rem; font-weight: 700; color: var(--texto); letter-spacing: -0.01em; }
 .pergunta { font-weight: 650; color: var(--texto); margin-bottom: 4px; padding-right: 118px; }
-.resultado .campo-texto { margin-bottom: 10px; }
+.comentario { margin-bottom: 10px; }
 
 .alternador {
   display: inline-flex;
