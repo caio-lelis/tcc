@@ -1,0 +1,165 @@
+# Banco de perguntas de EXEMPLO, sobre o modelo de partida fictício (dados/exemplo/).
+#
+# NÃO é o banco do experimento: serve para testar o harness e como modelo de
+# formato para o banco real (experimento/perguntas.yaml, 20 perguntas, 5 por estrato).
+#
+# Campos (Tab. 7 da proposta + D-16):
+#   id, pergunta, estrato (simples | juncao | regra | ambigua), sql_gabarito,
+#   ordenada (true quando a pergunta pede uma ordem), regra_envolvida, observacao,
+#   consultas_alternativas: interpretações erradas plausíveis. Cada uma precisa dar
+#   resultado DIFERENTE do gabarito, senão a pergunta não mede nada (D-16).
+#   categoria da alternativa: esquema | juncao | filtro_regra | agregacao |
+#   data_periodo | interpretacao (Seção 4.6.4).
+
+perguntas:
+  - id: E01
+    pergunta: Quantos clientes temos em cada estado?
+    estrato: simples
+    sql_gabarito: SELECT uf, COUNT(*) AS clientes FROM clientes GROUP BY uf
+
+  - id: E02
+    pergunta: Quantos vendedores ativos temos hoje?
+    estrato: simples
+    sql_gabarito: SELECT COUNT(*) AS vendedores FROM vendedores WHERE ativo
+    consultas_alternativas:
+      - descricao: conta também quem já saiu da empresa
+        categoria: filtro_regra
+        sql: SELECT COUNT(*) FROM vendedores
+
+  - id: E03
+    pergunta: Quantos contratos já enviamos para clientes do segmento Saúde?
+    estrato: juncao
+    sql_gabarito: >
+      SELECT COUNT(*) AS contratos FROM contratos c
+      JOIN clientes k ON k.id = c.cliente_id WHERE k.segmento = 'Saúde'
+    consultas_alternativas:
+      - descricao: conta clientes com contrato, não contratos
+        categoria: agregacao
+        sql: >
+          SELECT COUNT(DISTINCT c.cliente_id) FROM contratos c
+          JOIN clientes k ON k.id = c.cliente_id WHERE k.segmento = 'Saúde'
+      - descricao: conta os clientes do segmento, sem olhar os contratos
+        categoria: juncao
+        sql: SELECT COUNT(*) FROM clientes WHERE segmento = 'Saúde'
+
+  - id: E04
+    pergunta: Quantos contratos cada closer tem sob sua responsabilidade? Mostre o nome.
+    estrato: juncao
+    sql_gabarito: >
+      SELECT v.nome, COUNT(*) AS contratos FROM contratos c
+      JOIN vendedores v ON v.id = c.vendedor_id GROUP BY v.nome
+    consultas_alternativas:
+      - descricao: conta só os contratos com status assinado
+        categoria: filtro_regra
+        sql: >
+          SELECT v.nome, COUNT(*) FROM contratos c
+          JOIN vendedores v ON v.id = c.vendedor_id WHERE c.status = 'A' GROUP BY v.nome
+
+  - id: E05
+    pergunta: Quantas vendas houve em abril de 2026?
+    estrato: regra
+    regra_envolvida: >
+      Regras 1 e 2: venda é contrato assinado, exceto se cancelado em até 7 dias
+      após a assinatura; pertence ao mês da assinatura.
+    observacao: >
+      Março não serve para esta pergunta: nenhum contrato de março caiu no
+      arrependimento, e ignorar a regra daria o mesmo número (D-16).
+    sql_gabarito: >
+      SELECT COUNT(*) AS vendas FROM contratos
+      WHERE data_assinatura BETWEEN '2026-04-01' AND '2026-04-30'
+        AND NOT (data_cancelamento IS NOT NULL
+                 AND date_diff('day', data_assinatura, data_cancelamento) <= 7)
+    consultas_alternativas:
+      - descricao: conta contratos criados em abril
+        categoria: data_periodo
+        sql: SELECT COUNT(*) FROM contratos WHERE data_criacao BETWEEN '2026-04-01' AND '2026-04-30'
+      - descricao: usa status = 'A' em vez da regra do arrependimento
+        categoria: filtro_regra
+        sql: >
+          SELECT COUNT(*) FROM contratos
+          WHERE status = 'A' AND data_assinatura BETWEEN '2026-04-01' AND '2026-04-30'
+      - descricao: conta todo contrato assinado em abril, sem a regra do arrependimento
+        categoria: filtro_regra
+        sql: SELECT COUNT(*) FROM contratos WHERE data_assinatura BETWEEN '2026-04-01' AND '2026-04-30'
+
+  - id: E06
+    pergunta: Liste a receita de cada closer em 2026, da maior para a menor.
+    estrato: regra
+    ordenada: true
+    regra_envolvida: >
+      Regras 1, 3 e 5: receita = valor - desconto, só sobre as vendas, atribuída ao closer.
+    sql_gabarito: >
+      SELECT v.nome, SUM(c.valor - c.desconto) AS receita FROM contratos c
+      JOIN vendedores v ON v.id = c.vendedor_id
+      WHERE c.data_assinatura BETWEEN '2026-01-01' AND '2026-12-31'
+        AND NOT (c.data_cancelamento IS NOT NULL
+                 AND date_diff('day', c.data_assinatura, c.data_cancelamento) <= 7)
+      GROUP BY v.nome ORDER BY receita DESC
+    consultas_alternativas:
+      - descricao: soma o valor bruto, sem o desconto
+        categoria: agregacao
+        sql: >
+          SELECT v.nome, SUM(c.valor) AS receita FROM contratos c
+          JOIN vendedores v ON v.id = c.vendedor_id
+          WHERE c.data_assinatura BETWEEN '2026-01-01' AND '2026-12-31'
+            AND NOT (c.data_cancelamento IS NOT NULL
+                     AND date_diff('day', c.data_assinatura, c.data_cancelamento) <= 7)
+          GROUP BY v.nome ORDER BY receita DESC
+      - descricao: usa status = 'A' em vez da regra do arrependimento
+        categoria: filtro_regra
+        sql: >
+          SELECT v.nome, SUM(c.valor - c.desconto) AS receita FROM contratos c
+          JOIN vendedores v ON v.id = c.vendedor_id
+          WHERE c.status = 'A' GROUP BY v.nome ORDER BY receita DESC
+
+  - id: E07
+    pergunta: Quantas reuniões tivemos em abril de 2026?
+    estrato: ambigua
+    regra_envolvida: "Regra 4: reunião só conta quando situacao = 'R' e tipo = '1A'."
+    observacao: >
+      "Tivemos" pode ser lido como agendadas ou realizadas. Vale a definição de
+      reunião do negócio (regra 4).
+    sql_gabarito: >
+      SELECT COUNT(*) AS reunioes FROM reunioes
+      WHERE data_reuniao BETWEEN '2026-04-01' AND '2026-04-30' AND situacao = 'R' AND tipo = '1A'
+    consultas_alternativas:
+      - descricao: conta todas as reuniões agendadas
+        categoria: interpretacao
+        sql: SELECT COUNT(*) FROM reunioes WHERE data_reuniao BETWEEN '2026-04-01' AND '2026-04-30'
+      - descricao: conta as realizadas, incluindo retornos
+        categoria: filtro_regra
+        sql: >
+          SELECT COUNT(*) FROM reunioes
+          WHERE data_reuniao BETWEEN '2026-04-01' AND '2026-04-30' AND situacao = 'R'
+
+  - id: E08
+    pergunta: Quanto vendemos em abril de 2026?
+    estrato: ambigua
+    regra_envolvida: "Regras 1 a 3: receita das vendas do mês da assinatura."
+    observacao: >
+      "Quanto" pode ser quantidade ou valor. Decisão: valor, pela receita (regra 3).
+    sql_gabarito: >
+      SELECT SUM(valor - desconto) AS receita FROM contratos
+      WHERE data_assinatura BETWEEN '2026-04-01' AND '2026-04-30'
+        AND NOT (data_cancelamento IS NOT NULL
+                 AND date_diff('day', data_assinatura, data_cancelamento) <= 7)
+    consultas_alternativas:
+      - descricao: responde a quantidade de vendas, não o valor
+        categoria: interpretacao
+        sql: >
+          SELECT COUNT(*) FROM contratos
+          WHERE data_assinatura BETWEEN '2026-04-01' AND '2026-04-30'
+            AND NOT (data_cancelamento IS NOT NULL
+                     AND date_diff('day', data_assinatura, data_cancelamento) <= 7)
+      - descricao: soma o valor bruto, sem o desconto
+        categoria: agregacao
+        sql: >
+          SELECT SUM(valor) FROM contratos
+          WHERE data_assinatura BETWEEN '2026-04-01' AND '2026-04-30'
+            AND NOT (data_cancelamento IS NOT NULL
+                     AND date_diff('day', data_assinatura, data_cancelamento) <= 7)
+      - descricao: soma todo contrato assinado em abril, sem a regra do arrependimento
+        categoria: filtro_regra
+        sql: >
+          SELECT SUM(valor - desconto) FROM contratos
+          WHERE data_assinatura BETWEEN '2026-04-01' AND '2026-04-30'

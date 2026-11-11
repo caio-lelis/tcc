@@ -42,6 +42,16 @@ Marque `[x]` quando corrigir.
 - [ ] **Nomes das telas (Seções 3.3 e 3.6; Fig. 2).** As telas da Fig. 2 ("anexação", "descrições e regras", "conversa") se chamam na interface "Meus dados", "Sobre os dados" e "Perguntar". Ver D-18. Incluir capturas de tela no TCC2.
 - [ ] **Repositório (Seção 4.9).** Citar o endereço do repositório: https://github.com/caio-lelis/tcc
 
+## Experimento (harness)
+
+- [ ] **Campos do banco de perguntas (Tab. 7, Seção 3.9).** Além de `consultas_alternativas` (D-16), o item ganhou `ordenada` (verdadeiro quando a pergunta pede uma ordem, usado pela regra de acerto) e cada alternativa pode trazer a `categoria` de erro que representa. O banco é escrito em YAML e congelado em JSON.
+- [ ] **Congelamento verificável (Seções 3.9 e 4.5).** Descrever que o banco congelado guarda o resultado esperado, a cópia do contexto e as impressões digitais, e que o harness recusa rodar se pergunta, gabarito, contexto ou dados mudaram. Ver D-21.
+- [ ] **Chamada de interpretação fora do experimento (Seção 4.6.2).** Deixar explícito que as 180 execuções fazem só a chamada de geração, pelo mesmo fluxo da interface. Ver D-20.
+- [ ] **Falhas de infraestrutura (Seção 4.6.2).** Registrar que falhas de rede ou de saldo são refeitas e não contam como erro do modelo.
+- [ ] **Regra de acerto e casos limítrofes (Seção 4.6.3).** Detalhar os critérios implementados: número de colunas igual ao do gabarito; tolerância de 0,01; e os três casos marcados para revisão manual (colunas a mais, ordem diferente em pergunta ordenada, resultado cortado). Ver D-22.
+- [ ] **Classificação dos erros (Seção 4.6.4).** Descrever o procedimento: categorias automáticas pelo status; para as demais, a coincidência com uma consulta alternativa sugere a categoria e a decisão manual fica registrada com justificativa.
+- [ ] **Maioria com repetições faltando (Seção 4.6.3).** O resumo calcula a maioria sobre as repetições válidas e lista o que falta; a rodada oficial só deve ser analisada com "0 faltando".
+
 ## Elementos pré-textuais (sobras do modelo LaTeX)
 
 - [ ] **Folha de aprovação:** a data está "01 de junho de 2013" e os membros da banca ainda são "Convidado 1 / Convidado 2".

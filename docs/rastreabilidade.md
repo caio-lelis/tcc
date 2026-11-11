@@ -16,7 +16,7 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 | RF04 | Perguntar e responder em linguagem natural | ✅ | D5, D8 | [`3467d6f`][c-3467d6f], [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8] |
 | RF05 | SQL visível só no modo avançado | ✅ | D8 | [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8] |
 | RF06 | Selecionar configuração C0, C1 ou C2 | ✅ | D4 | [`701ff37`][c-701ff37], [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8] |
-| RF07 | Executar banco de perguntas em lote | ⬜ | D10 | |
+| RF07 | Executar banco de perguntas em lote | ✅ código pronto; falta o banco real | D10 | branch `feat/harness` |
 | RF08 | Texto interpretativo do resultado | ✅ | D5 | [`3467d6f`][c-3467d6f], [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8] |
 | RF09 | Gráfico interativo | ✅ | D7 | [`5b928e8`][c-5b928e8], [`2668ed8`][c-2668ed8], [`85ea06e`][c-85ea06e] |
 | RF10 | Atualizar tabela preservando o contexto *(novo)* | ✅ | D2, D3 | [`415808c`][c-415808c], [`ad5a249`][c-ad5a249], [`2668ed8`][c-2668ed8] |
@@ -69,6 +69,15 @@ Repositório: https://github.com/caio-lelis/tcc. Caminhos relativos à raiz; có
 - **Testes:** `test_construtor_contexto.py`
 - **Commit:** [`701ff37`][c-701ff37]
 - **Notas:** esquema em `CREATE TABLE` (D-01); instruções idênticas nas três configurações (D-03); exemplo real em `docs/exemplo-prompts.md`. A configuração é escolhida no corpo de `POST /perguntas` (padrão: `config.CONFIGURACAO_PADRAO`), commit [`5b928e8`][c-5b928e8].
+
+### RF07 · Executar o banco de perguntas em lote e registrar os resultados
+
+- **Código:** `services/harness.py` (verificar, congelar, rodar, avaliar e resumir), `services/comparacao.py` (regra de acerto da Seção 4.6.3), `models/experimento.py`, `scripts/harness.py` (linha de comando)
+- **Testes:** `test_harness.py`, `test_comparacao.py`
+- **Commit:** branch `feat/harness` (preencher após o merge)
+- **Notas:** o harness chama o mesmo `fluxo.responder` da interface, sem a 2ª chamada (D-20); o banco é congelado com impressão digital e o ambiente é conferido antes de cada rodada (D-21); casos limítrofes e categoria dos erros ficam num arquivo de revisão manual (D-22); perguntas discriminantes verificadas automaticamente (D-16).
+- **Exemplo:** `experimento/exemplo/perguntas.yaml` (8 perguntas sobre o modelo de partida fictício; não é o banco do experimento).
+- **Pendente:** o banco real de 20 perguntas (`experimento/perguntas.yaml`), que depende das tabelas da empresa, e a análise estatística (Seção 4.8).
 
 ### RF08 · Texto em linguagem natural que interpreta o resultado
 
@@ -135,6 +144,8 @@ Commit [`2668ed8`][c-2668ed8]. A interface fecha a parte "tela" dos requisitos a
 | — | `docker-compose.yml`, `backend/Dockerfile`, `frontend/Dockerfile`, `frontend/nginx.conf` (D-17) |
 
 Verificado em 06/11/2026: 122 testes passando dentro do container; teste de ponta a ponta pelo nginx (anexar os 4 CSVs do modelo de partida, cadastrar contexto, perguntar "Quantas vendas cada closer fez em 2026?" com o `gpt-5.6-luna`), com resposta correta (169 vendas no total) e registro gravado com `versao_codigo`.
+
+Verificado em 10/11/2026 (harness): 176 testes passando no container, 13 pulados (integração dos relatórios, que exige Postgres e MinIO). Inclui um ensaio de ponta a ponta pela linha de comando com o banco de exemplo (verificar, congelar, rodar e resumir: 8 perguntas × 3 configurações × 3 repetições = 72 execuções, respondidas com o próprio gabarito, 100% de acerto). Nenhuma chamada à API foi feita: o harness ainda não rodou com o modelo real.
 
 ## Histórico de commits
 

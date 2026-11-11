@@ -41,6 +41,9 @@ Três consultas válidas, três números plausíveis, só um certo, e o usuário
 | D-17 | Tudo em containers, com dados e registros fora deles | reprodutibilidade |
 | D-18 | Interface com vocabulário do negócio, sem termos técnicos | usabilidade |
 | D-19 | Gráfico escolhido pela estrutura do resultado, com regras de leitura | usabilidade |
+| D-20 | Harness pelo mesmo fluxo da interface, sem a chamada de interpretação | validade do experimento |
+| D-21 | Banco congelado com impressão digital e ambiente conferido a cada rodada | reprodutibilidade |
+| D-22 | Regra de acerto automática; o que ela não decide vai para revisão manual registrada | validade do experimento |
 
 ---
 
@@ -81,9 +84,32 @@ Três consultas válidas, três números plausíveis, só um certo, e o usuário
 - **Por quê:** transforma a ameaça "consulta incorreta que coincide com o resultado esperado" numa **mitigação verificável e automática**, aplicada a todas as perguntas, não a uma amostra. A revisão manual continua como verificação complementar. Também força quem escreve o banco a explicitar *qual* erro cada pergunta testa, o que conecta cada pergunta à taxonomia de erros (Q3).
 - **Na monografia:** Seções 3.9 e 4.5 (novo campo na Tab. 7), Tab. 10 (mitigação), Seção 4.6.3.
 
+### D-20 · Harness pelo mesmo fluxo da interface, sem a chamada de interpretação
+
+- **Decisão:** o harness não tem lógica própria de geração nem de execução: cada pergunta passa por `fluxo.responder`, o mesmo caminho da tela "Perguntar" (construtor de contexto, validador, executor, registro). A única diferença é que a 2ª chamada ao modelo (texto interpretativo) fica desligada; `--com-interpretacao` a religa.
+- **Alternativa descartada:** um script separado que monta o prompt e chama a API por conta própria.
+- **Por quê:** um caminho paralelo poderia divergir do assistente (outro limite de linhas, outro validador) e o experimento mediria um sistema que o usuário não usa. A interpretação fica fora porque a métrica avalia só o resultado da consulta (Seção 3.6) e a Seção 4.6.2 fala em "180 execuções de geração"; ligá-la só dobraria o número de chamadas.
+- **Falhas de infraestrutura** (rede, saldo) são refeitas até três vezes e ficam no registro como `erro_modelo`, fora da conta da acurácia. Uma rodada interrompida pode ser retomada: o que já foi respondido é pulado, e repetir uma combinação já respondida nunca troca o veredito (vale a primeira resposta válida).
+- **Na monografia:** Seções 3.3 (Harness), 4.6.2 e RF07.
+
+### D-22 · Regra de acerto automática; o que ela não decide vai para revisão manual registrada
+
+- **Decisão:** a regra da Seção 4.6.3 é aplicada por código (`services/comparacao.py`): mesmo conjunto de linhas, sem ordem (ou na ordem, se o item tem `ordenada: true`), sem considerar nomes nem ordem das colunas, com tolerância numérica de 0,01. O número de colunas precisa ser o do gabarito. Três situações reprovam automaticamente, mas ficam marcadas como **limítrofes**: resultado com as colunas do gabarito e mais algumas; mesmas linhas em outra ordem numa pergunta ordenada; resultado cortado no limite de linhas.
+- **Revisão manual:** um arquivo `<rodada>.revisao.yaml`, ao lado do registro, guarda a decisão de cada caso limítrofe e a categoria de cada erro (Seção 4.6.4), sempre com justificativa. O CSV da análise mantém as duas colunas, `acerto_automatico` e `acerto`, para que as decisões manuais fiquem visíveis.
+- **Categoria dos erros:** consultas que não produzem resultado são classificadas pelo status (`invalida`, `recusada`, `tempo_esgotado`). Para as demais, se o resultado errado coincide com uma das consultas alternativas do item (D-16), o harness mostra qual e sugere a categoria; a decisão continua manual.
+- **Alternativa descartada:** aceitar colunas a mais como acerto automático. Uma coluna a mais pode ser só um rótulo ou pode mudar o sentido da resposta; isso é julgamento, não comparação.
+- **Na monografia:** Seções 4.6.3 e 4.6.4; Tab. 10.
+
 ---
 
 ## Reprodutibilidade
+
+### D-21 · Banco congelado com impressão digital e ambiente conferido a cada rodada
+
+- **Decisão:** `congelar` executa cada gabarito e cada consulta alternativa e grava `perguntas.congelado.json` com o resultado esperado, uma cópia do contexto (C1 e C2), a impressão digital do banco e do contexto e o commit do código. O arquivo não é regravado. Antes de cada rodada, o harness recusa começar se o arquivo foi alterado, se o contexto cadastrado mudou ou se algum gabarito passou a dar outro resultado (os dados mudaram).
+- **Por quê:** a Seção 4.5 exige que perguntas e gabaritos não sejam ajustados depois de conhecido o desempenho do modelo. Com a conferência automática, isso deixa de depender de disciplina: qualquer mudança em pergunta, gabarito, regra ou dado impede a rodada.
+- **Atenção:** o arquivo congelado traz as descrições e regras da empresa. Só deve ir para o git com o repositório privado (ver D-09).
+- **Na monografia:** Seções 3.9, 4.5 e 4.9; Tab. 10.
 
 ### D-04 · Hash do contexto e do prompt em cada execução
 
