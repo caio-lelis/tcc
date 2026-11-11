@@ -6,6 +6,7 @@ Uma linha JSON por pergunta respondida pelo Data Talk (RNF02), gravada pelo
 | Arquivo | O que é |
 |---|---|
 | `<rodada>.jsonl` | rodadas do harness do experimento (piloto, oficial…) |
+| `<rodada>.revisao.yaml` | decisões manuais da rodada: casos limítrofes e categoria de cada erro (D-22) |
 | `uso/AAAA-MM-DD.jsonl` | perguntas feitas pela interface, por dia |
 
 **Os registros de `uso/` de 06/11/2026 são exploratórios**: perguntas de

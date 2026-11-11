@@ -55,6 +55,38 @@ O frontend em modo de desenvolvimento (`npm run dev` em `frontend/`, com Node 22
 | `frontend/` | interface (Vue + ECharts) |
 | `docs/` | monografia e documentação; [`decisoes.md`](docs/decisoes.md) registra as decisões de projeto, [`rastreabilidade.md`](docs/rastreabilidade.md) liga cada requisito ao código e ao commit, e [`ajustes-monografia.md`](docs/ajustes-monografia.md) lista o que corrigir no texto |
 
+## Experimento de acurácia (harness)
+
+O harness (RF07) roda o banco de perguntas nas três configurações, com três repetições, pelo mesmo fluxo da interface, e compara cada resultado com o gabarito. Ele usa os dados e o contexto que estão anexados no Data Talk.
+
+```bash
+docker compose exec backend python -m scripts.harness verificar                       # gabaritos e alternativas (D-16)
+docker compose exec backend python -m scripts.harness congelar                        # grava perguntas.congelado.json
+docker compose exec backend python -m scripts.harness rodar --rodada piloto --ensaio  # sem API: responde com o gabarito
+docker compose exec backend python -m scripts.harness rodar --rodada oficial          # 180 execuções (gasta API)
+docker compose exec backend python -m scripts.harness resumir --rodada oficial        # acurácia, consistência e CSV
+```
+
+| Arquivo | O que é |
+|---|---|
+| `experimento/perguntas.yaml` | banco de perguntas, escrito à mão (ainda não existe: depende das tabelas da empresa) |
+| `experimento/exemplo/perguntas.yaml` | exemplo de formato, sobre o modelo de partida fictício; use com `--banco` |
+| `experimento/perguntas.congelado.json` | banco congelado: resultado esperado, cópia do contexto e impressões digitais |
+| `experimento/execucoes/<rodada>.jsonl` | registro de cada execução |
+| `experimento/execucoes/<rodada>.revisao.yaml` | decisões manuais: casos limítrofes e categoria de cada erro |
+| `experimento/analise/<rodada>.csv` | uma linha por execução, com o veredito: entrada da análise estatística |
+
+`rodar` pode ser interrompido e retomado. Ele recusa começar se o banco congelado foi alterado ou se o contexto ou os dados mudaram desde o congelamento. Formato do arquivo de revisão:
+
+```yaml
+- execucao: 3f9a1c2b7d10        # id mostrado pelo "resumir"
+  acerto: true                  # opcional: só para casos limítrofes
+  categoria: filtro_regra       # esquema | juncao | filtro_regra | agregacao | data_periodo | interpretacao
+  justificativa: A coluna a mais só repete o nome do mês.
+```
+
+Decisões de projeto: D-16, D-20, D-21 e D-22 em [`docs/decisoes.md`](docs/decisoes.md).
+
 ## Custo estimado da API da OpenAI
 
 Estimativa para o modelo `gpt-5.6-terra`, feita antes da implementação. O registro de execuções (RNF02) grava os tokens e o custo reais de cada chamada, e esta seção será atualizada com os valores medidos.

@@ -39,7 +39,8 @@ MENSAGENS = {
 
 def responder(pergunta: str, cliente: ClienteLLM, configuracao: Configuracao | None = None,
               avancado: bool = False, origem: Origem = "interface", rodada: str | None = None,
-              pergunta_id: str | None = None, repeticao: int | None = None) -> RespostaFinal:
+              pergunta_id: str | None = None, repeticao: int | None = None,
+              interpretar: bool = True) -> RespostaFinal:
     inicio = time.perf_counter()
     configuracao = configuracao or config.CONFIGURACAO_PADRAO
 
@@ -78,13 +79,15 @@ def responder(pergunta: str, cliente: ClienteLLM, configuracao: Configuracao | N
         resposta.grafico = montar_grafico(geracao.grafico, resultado)
         resposta.colunas, resposta.linhas, resposta.truncado = resultado.colunas, resultado.linhas, resultado.truncado
 
-        # passo 7: interpretação (se falhar, a resposta ainda tem gráfico e tabela)
-        try:
-            interpretacao = cliente.interpretar(pergunta, resultado)
-            uso.interpretacao = interpretacao.uso
-            resposta.texto = execucao.texto = interpretacao.texto
-        except ErroModelo as erro:
-            execucao.erro = f"interpretação indisponível: {erro}"
+        # passo 7: interpretação (se falhar, a resposta ainda tem gráfico e tabela).
+        # O harness a dispensa: a acurácia avalia só o resultado da consulta (Seção 3.6).
+        if interpretar:
+            try:
+                interpretacao = cliente.interpretar(pergunta, resultado)
+                uso.interpretacao = interpretacao.uso
+                resposta.texto = execucao.texto = interpretacao.texto
+            except ErroModelo as erro:
+                execucao.erro = f"interpretação indisponível: {erro}"
 
     except FalhaConsulta as falha:
         execucao.status, execucao.erro = falha.categoria, falha.mensagem
