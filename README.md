@@ -91,3 +91,29 @@ Com margem para raciocínio mais longo que o previsto, a faixa realista é **US$
 - a Batch API da OpenAI cobra metade do preço e serve para o harness do experimento, que não precisa de resposta imediata;
 - as instruções gerais são iguais em todas as chamadas, então o cache de prompt reduz o custo da entrada repetida;
 - defina um limite mensal de gasto no painel da OpenAI (Settings → Limits).
+
+## Relatórios ao vivo
+
+Funcionalidade além do escopo do TCC: nas respostas de "Perguntar", o botão **Adicionar ao relatório**
+monta um documento editável ao lado da conversa. A aba **Relatórios** lista os documentos.
+
+- **Postgres** guarda os relatórios editáveis, o SQL de cada resultado e o índice de versões.
+- **MinIO** (API S3) guarda os PDFs: cada exportação é uma versão nova e imutável.
+- **DuckDB** não guarda nada de relatórios: uma consulta gerada pelo modelo não pode lê-los.
+- Os textos aceitam negrito, itálico, sublinhado, tachado, subtítulos, listas e citações. Ficam guardados
+  como JSON do Tiptap, nunca como HTML; o PDF só converte uma lista fechada de elementos.
+- **Atualizar números** roda de novo a consulta guardada no servidor. Não chama o modelo e não
+  escreve no registro de execuções. O navegador nunca envia nem recebe esse SQL.
+
+Postgres e MinIO sobem com o `docker compose up`, sem portas publicadas. Se caírem, só os relatórios
+param: as perguntas continuam funcionando. Os dados ficam em volumes do Docker, fora do repositório,
+porque os PDFs têm dados reais; `docker compose down -v` apaga tudo.
+
+Em servidor, defina as senhas descritas no `.env.example`. Ainda não há login: quem acessa a
+aplicação vê todos os relatórios (a coluna `dono_id` já existe para isso).
+
+Testes de integração (precisam de Postgres e MinIO, com o compose no ar):
+
+```
+docker compose exec -e DATA_TALK_TESTE_INTEGRACAO=1 backend python -m pytest tests/test_relatorios.py
+```

@@ -18,6 +18,11 @@ services:
       - ./experimento:/app/experimento
       # somente leitura: para registrar o commit do código em cada execução
       - ./.git:/app/.git:ro
+    environment:
+      DATA_TALK_POSTGRES_URL: postgresql://data_talk:${DATA_TALK_POSTGRES_SENHA:-data_talk_local}@postgres:5432/data_talk
+      DATA_TALK_S3_ENDPOINT: http://minio:9000
+      DATA_TALK_S3_CHAVE: ${DATA_TALK_MINIO_USUARIO:-data_talk}
+      DATA_TALK_S3_SEGREDO: ${DATA_TALK_MINIO_SENHA:-data_talk_local}
     restart: unless-stopped
 
   frontend:
@@ -28,3 +33,39 @@ services:
       backend:
         condition: service_healthy
     restart: unless-stopped
+
+  # Relatórios ao vivo (além do escopo do TCC). Sem portas publicadas: só o backend os acessa.
+  # O backend não depende deles para subir: fora do ar, só os relatórios param.
+  postgres:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_USER: data_talk
+      POSTGRES_PASSWORD: ${DATA_TALK_POSTGRES_SENHA:-data_talk_local}
+      POSTGRES_DB: data_talk
+    volumes:
+      - postgres_dados:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U data_talk"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  minio:
+    # O MinIO parou de publicar imagens oficiais e o repositório foi arquivado em abr/2026.
+    # Esta é a compilação comunitária do Pigsty, que segue recebendo correções.
+    # A aplicação usa só a API S3: para trocar de servidor, basta mudar este bloco.
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z@sha256:b6bfe7239bfc83fb90d31612d9704d86039dd714f7904b3f1ad68f211e602372
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: ${DATA_TALK_MINIO_USUARIO:-data_talk}
+      MINIO_ROOT_PASSWORD: ${DATA_TALK_MINIO_SENHA:-data_talk_local}
+    volumes:
+      - minio_dados:/data
+    restart: unless-stopped
+
+# Volumes do Docker, fora do repositório e do OneDrive: os PDFs têm dados reais (LGPD).
+# Atenção: "docker compose down -v" apaga os relatórios.
+volumes:
+  postgres_dados:
+  minio_dados:

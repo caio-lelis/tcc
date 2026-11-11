@@ -375,10 +375,10 @@ async function removerRegra(regra) {
   gap: 14px;
   align-items: center;
   padding: 8px 12px;
-  border-bottom: 1px solid #f0f2f7;
+  border-bottom: 1px solid var(--linha-fina);
 }
 .coluna:last-child { border-bottom: none; }
-.coluna.pendente { background: #fffdf7; }
+.coluna.pendente { background: var(--ambar-suave); }
 .coluna.pendente .campo { border-color: var(--ambar-borda); }
 .coluna-nome { display: flex; flex-direction: column; min-width: 0; }
 .coluna-nome code { font-size: 0.85rem; font-weight: 600; color: var(--texto); overflow: hidden; text-overflow: ellipsis; }

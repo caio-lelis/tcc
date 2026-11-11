@@ -34,7 +34,7 @@ import { avisos } from "../avisos.js";
   max-width: 420px;
   padding: 12px 16px;
   border-radius: 12px;
-  background: #0f172a;
+  background: var(--aviso-fundo);
   color: #f1f5f9;
   box-shadow: var(--sombra-lg);
   font-size: 0.9rem;
