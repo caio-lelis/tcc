@@ -75,6 +75,17 @@ def test_csv_brasileiro_latin1_ponto_e_virgula_virgula_decimal():
     assert tabela.amostra[0] == {"nome": "José", "valor": 1234.56, "situacao": "ok"}
 
 
+def test_data_com_fuso_horario_vira_texto_iso():
+    # exportações de CRM costumam trazer o fuso; o DuckDB lê como TIMESTAMPTZ e precisa do pytz
+    conteudo = b"id,criado_em\n1,2026-11-06 14:30:00-03:00\n"
+    tabela = ingerir_csv(conteudo, "crm.csv").tabela
+
+    tipos = {c.nome: c.tipo for c in tabela.colunas}
+    assert tipos["criado_em"] == "TIMESTAMP WITH TIME ZONE"
+    assert tabela.amostra[0]["criado_em"].startswith("2026-11-06")
+    assert listar_tabelas()[0].amostra[0]["criado_em"] == tabela.amostra[0]["criado_em"]
+
+
 def test_rejeita_arquivo_vazio():
     with pytest.raises(ErroIngestao):
         ingerir_csv(b"   \n", "vazio.csv")
