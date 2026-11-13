@@ -1,6 +1,7 @@
 <script setup>
 // Tela de descrições (RF02) e regras de negócio (RF03), com as pendências do RF10.
 // É o instrumento que produz o contexto C1 (descrições) e C2 (regras) do experimento.
+// Movimentos (anel de progresso, regras que entram e saem, sanfona) em docs/interface-fontes.md.
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import {
   Archive, BookOpenText, Calculator, ChevronDown, CircleCheck, FileSpreadsheet, LoaderCircle, Plus, Save, Scale, Trash2,
@@ -24,6 +25,9 @@ const regrasSalvas = reactive({}); // id -> JSON salvo
 const novaRegra = reactive({ texto: "", tipo: "regra" });
 const salvando = ref("");
 const abertas = ref(new Set());
+const montadas = ref(new Set()); // tabelas já abertas uma vez: ficam no DOM para a sanfona fechar suave
+const confirmandoRegra = ref(null);
+const CIRCUNFERENCIA = 326.7;
 
 function copiarRegras(lista) {
   regras.value = lista.map((r) => ({ ...r }));
@@ -45,7 +49,10 @@ async function carregar() {
       salvos[tabela.nome] = JSON.stringify(rascunhos[tabela.nome]);
     }
     copiarRegras(c.contexto.regras);
-    if (abertas.value.size === 0 && t.length) abertas.value = new Set([t[0].nome]);
+    if (abertas.value.size === 0 && t.length) {
+      abertas.value = new Set([t[0].nome]);
+      montadas.value = new Set([...montadas.value, t[0].nome]);
+    }
   } catch (e) {
     avisar(e.message, "erro");
   }
@@ -81,6 +88,7 @@ function alternar(nome) {
   const s = new Set(abertas.value);
   s.has(nome) ? s.delete(nome) : s.add(nome);
   abertas.value = s;
+  montadas.value = new Set([...montadas.value, nome]);
 }
 
 // ---------------------------------------------------------------- ações
@@ -126,8 +134,9 @@ async function salvarRegra(regra) {
   }
 }
 
+// confirmação no próprio cartão, sem janela do navegador
 async function removerRegra(regra) {
-  if (!confirm("Remover esta regra?")) return;
+  confirmandoRegra.value = null;
   try {
     await api.removerRegra(regra.id);
     await recarregarRegras();
@@ -149,8 +158,13 @@ async function removerRegra(regra) {
     </header>
 
     <!-- progresso -->
-    <div v-if="tabelas.length" class="cartao preenchido progresso">
+    <div v-if="tabelas.length" class="cartao preenchido progresso revela" style="--i: 1">
       <div class="progresso-topo">
+        <svg class="anel-svg" width="72" height="72" viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--trilho)" stroke-width="12" />
+          <circle class="anel" cx="60" cy="60" r="52" fill="none" :stroke="progresso === 100 ? 'var(--menta)' : 'var(--primaria)'" stroke-width="12"
+            stroke-linecap="round" :stroke-dasharray="CIRCUNFERENCIA" :style="{ strokeDashoffset: CIRCUNFERENCIA * (1 - progresso / 100) }" transform="rotate(-90 60 60)" />
+        </svg>
         <div>
           <div class="progresso-titulo">
             <CircleCheck v-if="progresso === 100" class="ok" />
@@ -161,7 +175,6 @@ async function removerRegra(regra) {
         <span class="espaco"></span>
         <div class="porcentagem">{{ progresso }}%</div>
       </div>
-      <div class="barra"><div class="preenchimento" :style="{ width: progresso + '%' }"></div></div>
       <div v-if="avancado && completo" class="texto-suave pequeno hash">hash do contexto: <code>{{ completo.hash }}</code></div>
     </div>
 
@@ -175,8 +188,8 @@ async function removerRegra(regra) {
       Como vocês contam as coisas. Ex.: <em>"Venda é um contrato assinado; ela pertence ao mês da assinatura."</em>
     </p>
 
-    <div class="regras">
-      <div v-for="(r, i) in regras" :key="r.id" class="regra cartao">
+    <TransitionGroup name="regra" tag="div" class="regras">
+      <div v-for="(r, i) in regras" :key="r.id" class="regra cartao vivo" :class="{ confirmando: confirmandoRegra === r.id }">
         <div class="numero">{{ i + 1 }}</div>
         <div class="regra-corpo">
           <div class="tipo-alternador">
@@ -187,11 +200,17 @@ async function removerRegra(regra) {
         </div>
         <div class="regra-acoes">
           <button v-if="regraAlterada(r)" class="botao primario pequeno" @click="salvarRegra(r)"><Save /> Salvar</button>
-          <button class="botao fantasma icone pequeno perigo" title="Remover regra" @click="removerRegra(r)"><Trash2 /></button>
+          <Transition name="troca" mode="out-in">
+            <div v-if="confirmandoRegra === r.id" key="c" class="confirmar">
+              <button class="botao pequeno sim" @click="removerRegra(r)">Remover</button>
+              <button class="botao pequeno" @click="confirmandoRegra = null">Manter</button>
+            </div>
+            <button v-else key="b" class="botao fantasma icone pequeno perigo" aria-label="Remover regra" @click="confirmandoRegra = r.id"><Trash2 /></button>
+          </Transition>
         </div>
       </div>
 
-      <div class="regra cartao nova">
+      <div key="nova" class="regra cartao nova">
         <div class="numero mais"><Plus /></div>
         <div class="regra-corpo">
           <div class="tipo-alternador">
@@ -204,7 +223,7 @@ async function removerRegra(regra) {
           <button class="botao primario pequeno" :disabled="!novaRegra.texto.trim()" @click="adicionarRegra"><Plus /> Adicionar</button>
         </div>
       </div>
-    </div>
+    </TransitionGroup>
 
     <!-- descrições (C1) -->
     <div class="secao-titulo">
@@ -218,8 +237,8 @@ async function removerRegra(regra) {
       <button class="botao primario" @click="$emit('ir-para', 'dados')">Ir para Meus dados</button>
     </div>
 
-    <article v-for="t in tabelas" :key="t.nome" class="cartao sanfona" :class="{ aberta: abertas.has(t.nome) }">
-      <button class="sanfona-topo" @click="alternar(t.nome)">
+    <article v-for="(t, i) in tabelas" :key="t.nome" class="cartao sanfona revela" :class="{ aberta: abertas.has(t.nome) }" :style="{ '--i': i + 2 }">
+      <button class="sanfona-topo" :aria-expanded="abertas.has(t.nome)" @click="alternar(t.nome)">
         <div class="tabela-icone"><FileSpreadsheet /></div>
         <div class="sanfona-titulo">
           <h3>{{ t.nome }}</h3>
@@ -228,13 +247,15 @@ async function removerRegra(regra) {
         <span class="espaco"></span>
         <span v-if="alterada(t.nome)" class="selo ambar">não salvo</span>
         <span
-          class="selo"
+          :key="contagem(t.nome).feitas === contagem(t.nome).total ? 'ok' : 'falta'"
+          class="selo pipoca"
           :class="contagem(t.nome).feitas === contagem(t.nome).total ? 'verde' : ''"
         >{{ contagem(t.nome).feitas }}/{{ contagem(t.nome).total }} descritos</span>
         <ChevronDown class="seta" />
       </button>
 
-      <div v-if="abertas.has(t.nome) && rascunhos[t.nome]" class="sanfona-corpo">
+      <div class="sanfona-corpo-anim" :class="{ aberta: abertas.has(t.nome) }"><div>
+      <div v-if="montadas.has(t.nome) && rascunhos[t.nome]" class="sanfona-corpo">
         <label class="rotulo">O que esta tabela guarda?</label>
         <textarea
           v-model="rascunhos[t.nome].descricao"
@@ -269,6 +290,7 @@ async function removerRegra(regra) {
           </button>
         </div>
       </div>
+      </div></div>
     </article>
 
     <div v-if="orfas.tabelas_orfas.length" class="guardadas texto-suave pequeno">
@@ -283,8 +305,10 @@ async function removerRegra(regra) {
 .progresso-titulo { display: flex; align-items: center; gap: 7px; font-weight: 650; }
 .progresso-titulo .ok { width: 18px; height: 18px; color: var(--verde); }
 .porcentagem { font-size: 1.6rem; font-weight: 750; letter-spacing: -0.02em; color: var(--primaria); font-variant-numeric: tabular-nums; }
-.barra { margin-top: 12px; height: 8px; border-radius: 999px; background: var(--superficie-2); border: 1px solid var(--borda); overflow: hidden; }
-.preenchimento { height: 100%; border-radius: 999px; background: var(--degrade-progresso); transition: width 0.4s ease; }
+.progresso { border-radius: 24px; }
+.anel-svg { flex-shrink: 0; }
+.anel { transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.4s; animation: anel 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.3s backwards; }
+@keyframes anel { from { stroke-dashoffset: 326.7; } }
 .hash { margin-top: 10px; }
 .hash code { font-size: 0.85em; background: var(--superficie-2); padding: 2px 6px; border-radius: 5px; }
 
@@ -292,7 +316,20 @@ async function removerRegra(regra) {
 .explicacao { margin: -6px 0 14px; }
 
 .regras { display: flex; flex-direction: column; gap: 10px; }
-.regra { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; }
+.regra { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border-radius: 20px; }
+.regra.vivo:hover { transform: translateY(-2px); }
+.regra.confirmando { border-color: var(--vermelho); }
+.confirmar { display: flex; flex-direction: column; gap: 6px; }
+.confirmar .sim { background: var(--vermelho); border-color: var(--vermelho); color: #fff; }
+.troca-enter-active, .troca-leave-active { transition: opacity 0.2s, transform 0.3s cubic-bezier(0.34, 1.4, 0.64, 1), filter 0.2s; }
+.troca-enter-from, .troca-leave-to { opacity: 0; transform: scale(0.9); filter: blur(3px); }
+/* regra nova entra com mola; a removida se dissolve e as outras sobem para o lugar */
+.regra-enter-active { transition: opacity 0.45s, transform 0.55s cubic-bezier(0.34, 1.4, 0.64, 1), filter 0.45s; }
+.regra-leave-active { transition: opacity 0.35s, transform 0.35s, filter 0.35s; position: absolute; width: 100%; }
+.regra-enter-from { opacity: 0; transform: translateY(14px) scale(0.94); filter: blur(6px); }
+.regra-leave-to { opacity: 0; transform: scale(0.94); filter: blur(8px); }
+.regra-move { transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+.regras { position: relative; }
 .regra.nova { border-style: dashed; box-shadow: none; background: var(--superficie-2); }
 .numero {
   flex-shrink: 0;
@@ -333,7 +370,7 @@ async function removerRegra(regra) {
 
 .vazio { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
 
-.sanfona { margin-bottom: 12px; overflow: hidden; transition: box-shadow 0.2s; }
+.sanfona { margin-bottom: 12px; overflow: hidden; border-radius: 22px; transition: box-shadow 0.3s; }
 .sanfona.aberta { box-shadow: var(--sombra); }
 .sanfona-topo {
   width: 100%;

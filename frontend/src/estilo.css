@@ -65,6 +65,16 @@
   --sombra-lg: 0 20px 40px -12px rgba(15, 23, 42, 0.18);
   --foco: 0 0 0 4px rgba(21, 96, 224, 0.16);
 
+  /* painel bento */
+  --marca: #0b3a9e; /* cartão do mascote e destaques em azul */
+  --bloco: #0f172a; /* cartão escuro de destaque */
+  --trilho: #ece8e0; /* fundo de barras e anéis */
+  --chip: #ffffff;
+  --reflexo: rgba(255, 255, 255, 0.55);
+  --sombra-hover: 0 22px 40px -20px rgba(15, 23, 42, 0.3);
+  --sombra-flutuante: 0 24px 48px -22px rgba(15, 23, 42, 0.28);
+  --barra-grafico: #b9d2fb;
+
   font-family: "Inter Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
   font-feature-settings: "cv11", "ss01";
   font-size: 15px;
@@ -127,6 +137,15 @@
   --sombra: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
   --sombra-lg: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
   --foco: 0 0 0 4px rgba(125, 176, 255, 0.25);
+
+  --marca: #123a8c;
+  --bloco: #1e3a74;
+  --trilho: #1b2c4d;
+  --chip: #182847;
+  --reflexo: rgba(255, 255, 255, 0.07);
+  --sombra-hover: 0 22px 40px -18px rgba(0, 0, 0, 0.75);
+  --sombra-flutuante: 0 24px 48px -22px rgba(0, 0, 0, 0.7);
+  --barra-grafico: #27427a;
 }
 
 * { box-sizing: border-box; }
@@ -302,4 +321,84 @@ pre.codigo {
 
 @media (max-width: 720px) {
   .pagina { padding: 24px 16px 72px; }
+}
+
+/* quem pede menos movimento no sistema recebe as telas sem animação */
+/* ------------------------------------------------------------------ movimento do painel bento
+   Padrões vistos em transitions.dev e React Bits Pro, reescritos aqui (fontes em docs/interface-fontes.md). */
+
+/* troca de tema suave: cores, fundos e bordas cruzam em vez de piscar */
+body { transition: background-color 0.45s ease, color 0.45s ease; }
+
+/* entrada em cascata: cada bloco chega desfocado, um depois do outro (use --i para a ordem) */
+@keyframes revela { from { opacity: 0; transform: translateY(18px) scale(0.985); filter: blur(10px); } }
+.revela { animation: revela 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards; animation-delay: calc(var(--i, 0) * 80ms + 120ms); }
+
+/* cartão vivo: sobe no hover e um reflexo atravessa */
+.vivo { position: relative; overflow: hidden; transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s, border-color 0.45s, background-color 0.45s; }
+.vivo:hover { transform: translateY(-4px); box-shadow: var(--sombra-hover); border-color: var(--borda-forte); }
+.vivo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, var(--reflexo) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.vivo:hover::after { transform: translateX(120%); }
+
+/* feixe: borda com um brilho que gira em volta do campo de pergunta */
+@property --angulo-feixe { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes feixe { to { --angulo-feixe: 360deg; } }
+.feixe {
+  padding: 1.5px;
+  border-radius: 22px;
+  background: conic-gradient(from var(--angulo-feixe), var(--borda-forte) 0deg 230deg, var(--menta) 290deg, var(--primaria) 330deg, var(--borda-forte) 360deg);
+  animation: feixe 5s linear infinite;
+  box-shadow: var(--sombra-flutuante);
+}
+.feixe:focus-within { box-shadow: var(--sombra-flutuante), var(--foco); }
+
+/* texto com brilho que varre (estados de "pensando") */
+@keyframes varre { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+.brilho-texto {
+  background: linear-gradient(90deg, var(--suave) 0%, var(--suave) 35%, var(--primaria) 50%, var(--suave) 65%, var(--suave) 100%) 0 0 / 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: varre 1.8s linear infinite;
+}
+
+/* ponto "ao vivo" com onda */
+@keyframes pulso { from { transform: scale(1); opacity: 0.5; } to { transform: scale(3); opacity: 0; } }
+.pulso { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.pulso::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: currentColor; animation: pulso 1.8s ease-out infinite; }
+
+/* sanfona: abre pela altura real do conteúdo */
+.sanfona-corpo-anim { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+.sanfona-corpo-anim.aberta { grid-template-rows: 1fr; }
+.sanfona-corpo-anim > div { overflow: hidden; min-height: 0; }
+
+/* check que se desenha */
+@keyframes desenha-check { from { stroke-dashoffset: 24; } }
+.check-desenho path { stroke-dasharray: 24; animation: desenha-check 0.45s cubic-bezier(0.65, 0, 0.35, 1) backwards; }
+
+/* surge com mola (selos, chips, itens novos) */
+@keyframes pipoca { from { opacity: 0; transform: scale(0.6); } }
+.pipoca { animation: pipoca 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+
+/* esqueleto de carregamento */
+@keyframes esqueleto { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.esqueleto { background: linear-gradient(90deg, var(--trilho) 0%, var(--superficie-2) 50%, var(--trilho) 100%) 0 0 / 200% 100%; animation: esqueleto 1.3s ease-in-out infinite; border-radius: 6px; }
+
+/* pílula deslizante genérica (abas, alternadores) */
+.pilula-deslizante { position: absolute; top: 0; left: 0; pointer-events: none; transition: transform 0.6s cubic-bezier(0.34, 1.32, 0.64, 1), width 0.5s cubic-bezier(0.22, 1, 0.36, 1), height 0.3s, opacity 0.3s, background-color 0.45s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

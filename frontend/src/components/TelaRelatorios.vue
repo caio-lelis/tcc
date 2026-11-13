@@ -45,7 +45,7 @@ onMounted(carregar);
 
 <template>
   <section class="pagina">
-    <div class="cabecalho">
+    <div class="cabecalho revela" style="--i: 0">
       <h1>Relatórios</h1>
       <p>Junte as respostas do assistente num documento seu, edite como quiser e exporte em PDF.</p>
     </div>
@@ -56,9 +56,10 @@ onMounted(carregar);
       <aside class="lista">
         <button class="botao primario" @click="tentar(() => criarRelatorio('Relatório sem título'))"><FilePlus2 /> Novo relatório</button>
         <div
-          v-for="r in relatorios.lista"
+          v-for="(r, i) in relatorios.lista"
           :key="r.id"
-          class="item-relatorio"
+          class="item-relatorio revela"
+          :style="{ '--i': i + 1 }"
           :class="{ ativo: relatorios.atual?.id === r.id }"
         >
           <button class="abrir" @click="tentar(() => abrirRelatorio(r.id))">
@@ -93,7 +94,8 @@ onMounted(carregar);
 .grade { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 28px; align-items: start; }
 .lista { display: flex; flex-direction: column; gap: 6px; position: sticky; top: 24px; }
 .lista > .botao { margin-bottom: 8px; }
-.item-relatorio { display: flex; align-items: center; border-radius: 10px; border: 1px solid transparent; }
+.item-relatorio { display: flex; align-items: center; border-radius: 14px; border: 1px solid transparent; transition: background 0.25s, border-color 0.25s, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+.item-relatorio:hover { transform: translateX(3px); }
 .item-relatorio:hover { background: var(--superficie-2); }
 .item-relatorio.ativo { background: var(--superficie); border-color: var(--borda); box-shadow: var(--sombra-sm); }
 .abrir {

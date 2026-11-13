@@ -1,5 +1,6 @@
 <script setup>
 // Tela de anexação (RF01) e atualização de tabelas (RF10).
+// Movimentos (borda que anda, esqueleto, remoção que se dissolve, sanfona) em docs/interface-fontes.md.
 import { onMounted, ref, watch } from "vue";
 import {
   Calendar, ChevronDown, CloudUpload, FileSpreadsheet, Hash, LoaderCircle, Rows3, ToggleLeft, Trash2, Type, X,
@@ -20,6 +21,9 @@ const resultados = ref([]);
 const arrastando = ref(false);
 const seletor = ref(null);
 const abertas = ref(new Set());
+const montadas = ref(new Set()); // amostras já abertas uma vez: continuam no DOM para a sanfona fechar suave
+const confirmando = ref(null);
+const saindo = ref(null);
 
 async function carregar() {
   try {
@@ -65,14 +69,18 @@ async function anexar() {
   }
 }
 
+// remoção confirmada no próprio cartão, sem janela do navegador; o cartão se dissolve ao sair
 async function excluir(tabela) {
-  if (!confirm(`Remover a tabela "${tabela}"?\n\nO que você escreveu sobre ela fica guardado e volta se ela for anexada de novo.`)) return;
+  confirmando.value = null;
+  saindo.value = tabela;
   try {
-    await api.removerTabela(tabela);
-    avisar(`Tabela "${tabela}" removida.`);
+    await Promise.all([api.removerTabela(tabela), new Promise((r) => setTimeout(r, 500))]);
+    avisar(`Tabela "${tabela}" removida. O que você escreveu sobre ela fica guardado e volta se ela for anexada de novo.`);
     emit("alterado");
   } catch (e) {
     avisar(e.message, "erro");
+  } finally {
+    saindo.value = null;
   }
 }
 
@@ -80,6 +88,15 @@ function alternar(nomeTabela) {
   const s = new Set(abertas.value);
   s.has(nomeTabela) ? s.delete(nomeTabela) : s.add(nomeTabela);
   abertas.value = s;
+  montadas.value = new Set([...montadas.value, nomeTabela]);
+}
+
+function classeDoTipo(tipo) {
+  const t = tipo.toUpperCase();
+  if (/INT|DOUBLE|FLOAT|DECIMAL|REAL/.test(t)) return "numero";
+  if (/DATE|TIME/.test(t)) return "data";
+  if (t === "BOOLEAN") return "logico";
+  return "texto";
 }
 
 function iconeDoTipo(tipo) {
@@ -138,6 +155,7 @@ const amostraEmLinhas = (t) => t.amostra.map((l) => t.colunas.map((c) => l[c.nom
           {{ enviando ? "Enviando…" : arquivos.length === 1 ? "Anexar tabela" : `Anexar ${arquivos.length} tabelas` }}
         </button>
       </div>
+      <div v-if="enviando" class="progresso" role="progressbar" aria-label="Enviando"><span></span></div>
     </div>
 
     <!-- o que mudou no último envio (RF10) -->
@@ -165,7 +183,13 @@ const amostraEmLinhas = (t) => t.amostra.map((l) => t.colunas.map((c) => l[c.nom
     <div v-if="!tabelas.length" class="cartao preenchido vazio texto-suave">Nenhuma tabela anexada ainda.</div>
 
     <div class="grade">
-      <article v-for="t in tabelas" :key="t.nome" class="cartao tabela-cartao">
+      <article
+        v-for="(t, i) in tabelas"
+        :key="t.nome"
+        class="cartao tabela-cartao vivo revela"
+        :class="{ saindo: saindo === t.nome, confirmando: confirmando === t.nome }"
+        :style="{ '--i': i + 2 }"
+      >
         <header class="tabela-topo">
           <div class="tabela-icone"><FileSpreadsheet /></div>
           <div>
@@ -173,43 +197,75 @@ const amostraEmLinhas = (t) => t.amostra.map((l) => t.colunas.map((c) => l[c.nom
             <div class="texto-suave pequeno">{{ formatarNumero(t.linhas) }} linhas · {{ t.colunas.length }} colunas</div>
           </div>
           <span class="espaco"></span>
-          <button class="botao fantasma icone pequeno perigo" title="Remover tabela" @click="excluir(t.nome)"><Trash2 /></button>
+          <Transition name="troca" mode="out-in">
+            <div v-if="confirmando === t.nome" key="c" class="confirmar">
+              <span>Remover?</span>
+              <button class="botao pequeno sim" @click="excluir(t.nome)">Sim</button>
+              <button class="botao pequeno" @click="confirmando = null">Não</button>
+            </div>
+            <button v-else key="b" class="botao fantasma icone pequeno perigo" :aria-label="`Remover a tabela ${t.nome}`" @click="confirmando = t.nome"><Trash2 /></button>
+          </Transition>
         </header>
 
         <div class="colunas">
-          <span v-for="c in t.colunas" :key="c.nome" class="coluna" :title="`${c.tipo} · original: ${c.nome_original}`">
+          <span v-for="c in t.colunas" :key="c.nome" class="coluna" :class="classeDoTipo(c.tipo)" :title="`${c.tipo} · original: ${c.nome_original}`">
             <component :is="iconeDoTipo(c.tipo)" />{{ c.nome }}
           </span>
         </div>
 
-        <button class="ver-amostra" @click="alternar(t.nome)">
+        <button class="ver-amostra" :aria-expanded="abertas.has(t.nome)" @click="alternar(t.nome)">
           <Rows3 /> {{ abertas.has(t.nome) ? "Esconder amostra" : "Ver amostra" }}
           <ChevronDown class="seta" :class="{ aberta: abertas.has(t.nome) }" />
         </button>
-        <div v-if="abertas.has(t.nome)" class="amostra surgir">
-          <TabelaResultado :colunas="t.colunas.map((c) => c.nome)" :linhas="amostraEmLinhas(t)" />
+        <div class="sanfona-corpo-anim" :class="{ aberta: abertas.has(t.nome) }">
+          <div>
+            <TabelaResultado v-if="montadas.has(t.nome)" class="amostra" :colunas="t.colunas.map((c) => c.nome)" :linhas="amostraEmLinhas(t)" />
+          </div>
         </div>
+      </article>
+
+      <!-- esqueleto da tabela que está chegando -->
+      <article v-if="enviando" class="cartao tabela-cartao esqueleto-cartao" aria-label="Lendo a tabela nova">
+        <div class="tabela-topo"><span class="esqueleto" style="width: 40px; height: 40px; border-radius: 12px"></span><div style="flex: 1; display: flex; flex-direction: column; gap: 7px"><span class="esqueleto" style="width: 55%; height: 14px"></span><span class="esqueleto" style="width: 35%; height: 11px"></span></div></div>
+        <div class="colunas"><span class="esqueleto" style="width: 70px; height: 24px"></span><span class="esqueleto" style="width: 96px; height: 24px"></span><span class="esqueleto" style="width: 62px; height: 24px"></span></div>
       </article>
     </div>
   </section>
 </template>
 
 <style scoped>
+/* área de soltar com "formigas": o tracejado anda em volta da borda */
 .soltar {
+  --traco: var(--borda-forte);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   padding: 36px 24px;
-  border: 2px dashed var(--borda-forte);
-  border-radius: var(--raio-lg);
-  background: var(--superficie);
+  border-radius: 26px;
+  background-color: var(--superficie);
+  background-image:
+    repeating-linear-gradient(90deg, var(--traco) 0 10px, transparent 10px 18px),
+    repeating-linear-gradient(90deg, var(--traco) 0 10px, transparent 10px 18px),
+    repeating-linear-gradient(0deg, var(--traco) 0 10px, transparent 10px 18px),
+    repeating-linear-gradient(0deg, var(--traco) 0 10px, transparent 10px 18px);
+  background-size: 100% 2px, 100% 2px, 2px 100%, 2px 100%;
+  background-position: 0 0, 0 100%, 0 0, 100% 0;
+  background-repeat: no-repeat;
+  animation: formigas 1.2s linear infinite, revela 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards;
   cursor: pointer;
   text-align: center;
-  transition: border-color 0.15s, background 0.15s;
+  transition: background-color 0.3s, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.soltar:hover, .soltar.arrastando { border-color: var(--borda-foco); background: var(--linha-hover); }
-.soltar.arrastando { transform: scale(1.005); }
+@keyframes formigas { to { background-position: 18px 0, -18px 100%, 0 -18px, 100% 18px; } }
+.soltar:hover, .soltar.arrastando { --traco: var(--primaria); background-color: var(--menta-50); }
+.soltar.arrastando { transform: scale(1.01); }
+.soltar-icone { transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.soltar:hover .soltar-icone, .soltar.arrastando .soltar-icone { transform: translateY(-6px) scale(1.08); }
+
+.progresso { height: 6px; margin-top: 12px; border-radius: 99px; background: var(--trilho); overflow: hidden; }
+.progresso span { display: block; height: 100%; width: 40%; border-radius: 99px; background: var(--primaria); animation: vai-e-vem 1.2s ease-in-out infinite; }
+@keyframes vai-e-vem { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
 .soltar-icone {
   width: 52px;
   height: 52px;
@@ -245,7 +301,16 @@ const amostraEmLinhas = (t) => t.amostra.map((l) => t.colunas.map((c) => l[c.nom
 
 .vazio { text-align: center; }
 .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); gap: 16px; }
-.tabela-cartao { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.tabela-cartao { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; border-radius: 24px; }
+.tabela-cartao.confirmando { border-color: var(--vermelho); }
+.tabela-cartao.saindo { animation: dissolve 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; pointer-events: none; }
+@keyframes dissolve { to { opacity: 0; transform: scale(0.92); filter: blur(10px); } }
+.confirmar { display: flex; align-items: center; gap: 6px; font-size: 0.86rem; font-weight: 600; color: var(--vermelho); }
+.confirmar .sim { background: var(--vermelho); border-color: var(--vermelho); color: #fff; }
+.troca-enter-active, .troca-leave-active { transition: opacity 0.2s, transform 0.3s cubic-bezier(0.34, 1.4, 0.64, 1), filter 0.2s; }
+.troca-enter-from, .troca-leave-to { opacity: 0; transform: scale(0.9); filter: blur(3px); }
+.esqueleto-cartao { animation: revela 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.amostra { margin-top: 4px; }
 .tabela-topo { display: flex; align-items: center; gap: 12px; }
 .tabela-topo h3 { font-size: 1.02rem; }
 .tabela-icone {
@@ -273,6 +338,13 @@ const amostraEmLinhas = (t) => t.amostra.map((l) => t.colunas.map((c) => l[c.nom
   color: var(--texto-2);
 }
 .coluna svg { width: 12px; height: 12px; color: var(--muito-suave); }
+/* cor por tipo: número, data, sim/não; texto fica neutro */
+.coluna.numero { background: var(--primaria-50); border-color: var(--primaria-100); color: var(--primaria); }
+.coluna.numero svg { color: var(--primaria); }
+.coluna.data { background: var(--ambar-50); border-color: var(--ambar-borda); color: var(--ambar-texto); }
+.coluna.data svg { color: var(--ambar); }
+.coluna.logico { background: var(--menta-50); border-color: var(--menta-borda); color: var(--menta-texto); }
+.coluna.logico svg { color: var(--menta-texto); }
 
 .ver-amostra {
   align-self: flex-start;

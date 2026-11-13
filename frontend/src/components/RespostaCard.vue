@@ -4,8 +4,11 @@
 import { computed, ref } from "vue";
 import { BarChart3, Check, Code2, Copy, FilePlus2, LoaderCircle, Table2, TriangleAlert } from "@lucide/vue";
 import Grafico from "./Grafico.vue";
+import NumeroTambor from "./NumeroTambor.vue";
+import Pensando from "./Pensando.vue";
+import { usarIndicador } from "../indicador.js";
 import TabelaResultado from "./TabelaResultado.vue";
-import { formatarNumero, nomeLegivel } from "../formatacao.js";
+import { nomeLegivel } from "../formatacao.js";
 import { avisar } from "../avisos.js";
 import { anexarResposta, relatorios } from "../relatorios.js";
 
@@ -18,7 +21,12 @@ const props = defineProps({
 });
 
 const visao = ref("grafico");
+const alternador = ref(null);
+const { estilo: estiloPilula } = usarIndicador(alternador, visao);
 const copiado = ref(false);
+
+// o texto chega palavra por palavra (padrão "Streaming text" do transitions.dev, reescrito)
+const palavras = computed(() => (props.resposta?.texto ?? "").split(/\s+/).filter(Boolean));
 
 const sucesso = computed(() => props.resposta?.status === "sucesso");
 const grafico = computed(() => props.resposta?.grafico);
@@ -67,10 +75,7 @@ async function copiarSql() {
 
       <div class="corpo">
         <!-- carregando -->
-        <div v-if="carregando" class="pensando">
-          <span class="pontos"><i></i><i></i><i></i></span>
-          Analisando seus dados…
-        </div>
+        <Pensando v-if="carregando" />
 
         <!-- erro de comunicação -->
         <div v-else-if="erro" class="alerta erro"><TriangleAlert /><span>{{ erro }}</span></div>
@@ -80,24 +85,29 @@ async function copiarSql() {
           <div v-if="!sucesso" class="alerta"><TriangleAlert /><span>{{ resposta.mensagem }}</span></div>
 
           <template v-else>
-            <p v-if="resposta.texto" class="texto">{{ resposta.texto }}</p>
+            <p v-if="resposta.texto" class="texto" :aria-label="resposta.texto">
+              <span v-for="(p, i) in palavras" :key="i" class="palavra" aria-hidden="true" :style="{ animationDelay: `${i * 35}ms` }">{{ p }} </span>
+            </p>
 
             <!-- números em destaque -->
             <div v-if="indicadores.length" class="indicadores">
               <div v-for="ind in indicadores" :key="ind.rotulo" class="indicador cartao">
                 <div class="indicador-rotulo">{{ nomeLegivel(ind.rotulo) }}</div>
-                <div class="indicador-valor">{{ typeof ind.valor === "number" ? formatarNumero(ind.valor) : ind.valor ?? "—" }}</div>
+                <div class="indicador-valor"><NumeroTambor v-if="typeof ind.valor === 'number'" :valor="ind.valor" :atraso="200" /><template v-else>{{ ind.valor ?? "—" }}</template></div>
               </div>
             </div>
 
             <!-- gráfico e tabela -->
             <div v-else-if="temLinhas" class="painel cartao">
-              <div v-if="temGrafico" class="alternador">
-                <button :class="{ ativo: visao === 'grafico' }" @click="visao = 'grafico'"><BarChart3 /> Gráfico</button>
-                <button :class="{ ativo: visao === 'tabela' }" @click="visao = 'tabela'"><Table2 /> Tabela</button>
+              <div v-if="temGrafico" ref="alternador" class="alternador">
+                <span class="pilula" :style="estiloPilula" aria-hidden="true"></span>
+                <button :class="{ ativo: visao === 'grafico' }" :data-ativo="visao === 'grafico'" :aria-pressed="visao === 'grafico'" @click="visao = 'grafico'"><BarChart3 /> Gráfico</button>
+                <button :class="{ ativo: visao === 'tabela' }" :data-ativo="visao === 'tabela'" :aria-pressed="visao === 'tabela'" @click="visao = 'tabela'"><Table2 /> Tabela</button>
               </div>
-              <Grafico v-if="temGrafico && visao === 'grafico'" :grafico="grafico" />
-              <TabelaResultado v-else :colunas="resposta.colunas" :linhas="resposta.linhas" />
+              <Transition name="visao" mode="out-in">
+                <Grafico v-if="temGrafico && visao === 'grafico'" key="g" :grafico="grafico" />
+                <TabelaResultado v-else key="t" :colunas="resposta.colunas" :linhas="resposta.linhas" />
+              </Transition>
               <p v-if="!temGrafico && grafico?.motivo" class="motivo">{{ grafico.motivo }}</p>
               <div class="rodape">
                 <span>{{ resposta.linhas.length }}{{ resposta.truncado ? "+" : "" }} linha{{ resposta.linhas.length === 1 ? "" : "s" }}</span>
@@ -109,7 +119,7 @@ async function copiarSql() {
 
             <div v-if="temLinhas" class="acoes-resposta">
               <button class="botao pequeno" :disabled="anexando || anexado" @click="adicionarAoRelatorio">
-                <Check v-if="anexado" /><LoaderCircle v-else-if="anexando" class="girando" /><FilePlus2 v-else />
+                <Check v-if="anexado" class="check-desenho" /><LoaderCircle v-else-if="anexando" class="girando" /><FilePlus2 v-else />
                 {{ anexado ? "No relatório" : "Adicionar ao relatório" }}
               </button>
             </div>
@@ -166,20 +176,9 @@ async function copiarSql() {
 .corpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding-top: 5px; }
 
 .texto { font-size: 1.02rem; line-height: 1.65; color: var(--texto-2); }
+.palavra { animation: palavra-chega 0.55s ease-out backwards; }
+@keyframes palavra-chega { from { opacity: 0; filter: blur(6px); } }
 
-.pensando { display: flex; align-items: center; gap: 12px; color: var(--suave); padding-top: 2px; }
-.pontos { display: inline-flex; gap: 4px; }
-.pontos i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--primaria);
-  opacity: 0.3;
-  animation: pulsar 1.2s infinite ease-in-out;
-}
-.pontos i:nth-child(2) { animation-delay: 0.15s; }
-.pontos i:nth-child(3) { animation-delay: 0.3s; }
-@keyframes pulsar { 0%, 80%, 100% { opacity: 0.25; transform: scale(0.85); } 40% { opacity: 1; transform: scale(1); } }
 
 .indicadores { display: flex; flex-wrap: wrap; gap: 12px; }
 .indicador { padding: 20px 24px; width: fit-content; min-width: 220px; position: relative; overflow: hidden; }
@@ -191,16 +190,15 @@ async function copiarSql() {
   letter-spacing: -0.03em;
   line-height: 1.15;
   margin-top: 4px;
-  background: var(--degrade);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  /* cor sólida: degradê recortado no texto some nos dígitos em movimento do tambor */
+  color: var(--primaria);
   font-variant-numeric: tabular-nums;
 }
 
 .painel { padding: 16px 18px 12px; }
 .acoes-resposta { display: flex; }
 .alternador {
+  position: relative;
   display: inline-flex;
   padding: 3px;
   margin-bottom: 14px;
@@ -208,7 +206,20 @@ async function copiarSql() {
   background: var(--superficie-2);
   border: 1px solid var(--borda);
 }
+.alternador .pilula {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 8px;
+  background: var(--superficie);
+  box-shadow: var(--sombra-sm);
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), width 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s;
+  pointer-events: none;
+}
 .alternador button {
+  position: relative;
+  z-index: 1;
+  transition: color 0.2s;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -224,7 +235,9 @@ async function copiarSql() {
   cursor: pointer;
 }
 .alternador button svg { width: 15px; height: 15px; }
-.alternador button.ativo { background: var(--superficie); color: var(--texto); box-shadow: var(--sombra-sm); }
+.alternador button.ativo { color: var(--texto); }
+.visao-enter-active, .visao-leave-active { transition: opacity 0.18s, filter 0.18s; }
+.visao-enter-from, .visao-leave-to { opacity: 0; filter: blur(3px); }
 .motivo { margin-top: 10px; font-size: 0.82rem; color: var(--suave); }
 .rodape { display: flex; gap: 10px; align-items: center; margin-top: 10px; font-size: 0.82rem; color: var(--muito-suave); }
 

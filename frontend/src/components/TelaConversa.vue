@@ -1,10 +1,12 @@
 <script setup>
 // Tela de conversa (RF04): pergunta em linguagem natural; resposta em texto, gráfico e tabela.
 import { nextTick, onMounted, ref, watch } from "vue";
-import { ArrowUp, CalendarRange, Database, LineChart, Trophy, Users } from "@lucide/vue";
+import { ArrowRight, ArrowUp, CalendarRange, Database, LineChart, Trophy, Users } from "@lucide/vue";
 import LogoDataTalk from "./LogoDataTalk.vue";
 import RespostaCard from "./RespostaCard.vue";
 import { api } from "../api.js";
+import { marcarPergunta } from "../jornada.js";
+import { perguntaPendente } from "../pedido.js";
 
 const props = defineProps({
   avancado: { type: Boolean, default: false },
@@ -64,6 +66,7 @@ async function enviar(texto) {
       avancado: props.avancado,
       ...(props.avancado && configuracao.value ? { configuracao: configuracao.value } : {}),
     });
+    marcarPergunta();
   } catch (e) {
     atual.erro = e.message;
   } finally {
@@ -72,6 +75,13 @@ async function enviar(texto) {
     rolarParaFim();
   }
 }
+
+// pergunta feita no Início: chega aqui e é enviada
+watch(perguntaPendente, (pedido) => {
+  if (!pedido) return;
+  perguntaPendente.value = null;
+  enviar(pedido.texto);
+});
 
 function aoTeclar(evento) {
   if (evento.key === "Enter" && !evento.shiftKey) {
@@ -98,9 +108,16 @@ function aoTeclar(evento) {
         <h1>O que você quer saber?</h1>
         <p>Pergunte como perguntaria a um colega. O Data Talk consulta as suas tabelas e responde com texto, gráfico e tabela.</p>
         <div class="sugestoes">
-          <button v-for="s in SUGESTOES" :key="s.texto" class="sugestao" @click="enviar(s.texto)">
+          <button
+            v-for="(s, i) in SUGESTOES"
+            :key="s.texto"
+            class="sugestao"
+            :style="{ '--ordem': i }"
+            @click="enviar(s.texto)"
+          >
             <component :is="s.icone" />
             <span>{{ s.texto }}</span>
+            <ArrowRight class="seta" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -110,7 +127,8 @@ function aoTeclar(evento) {
     </div>
 
     <form class="compositor" @submit.prevent="enviar()">
-      <div class="caixa" :class="{ desativada: tabelas?.length === 0 }">
+      <div class="feixe" :class="{ desativada: tabelas?.length === 0 }">
+      <div class="caixa">
         <textarea
           ref="campo"
           v-model="pergunta"
@@ -132,6 +150,7 @@ function aoTeclar(evento) {
             <ArrowUp />
           </button>
         </div>
+      </div>
       </div>
     </form>
   </section>
@@ -165,6 +184,13 @@ function aoTeclar(evento) {
 }
 .sugestao:hover { border-color: var(--borda-foco); box-shadow: var(--sombra); transform: translateY(-1px); }
 .sugestao svg { width: 20px; height: 20px; color: var(--primaria); flex-shrink: 0; }
+.sugestao span { flex: 1; }
+/* seta que aparece ao passar o mouse, indicando que o cartão envia a pergunta */
+.sugestao .seta { width: 16px; height: 16px; opacity: 0; transform: translateX(-6px); transition: opacity 0.2s, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1); }
+.sugestao:hover .seta, .sugestao:focus-visible .seta { opacity: 1; transform: none; }
+/* as sugestões chegam uma depois da outra */
+.sugestao { animation: chegar 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(0.12s + var(--ordem) * 0.06s); }
+@keyframes chegar { from { opacity: 0; transform: translateY(10px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
 
 .compositor {
   position: sticky;
@@ -172,16 +198,13 @@ function aoTeclar(evento) {
   padding: 12px 0 24px;
   background: linear-gradient(to bottom, transparent 0%, var(--fundo) 30%);
 }
+/* a borda é o "feixe" (estilo.css): um brilho menta e azul que gira em volta */
 .caixa {
   background: var(--superficie);
-  border: 1px solid var(--borda);
-  border-radius: 20px;
+  border-radius: 20.5px;
   padding: 14px 14px 10px 18px;
-  box-shadow: var(--sombra-lg);
-  transition: border-color 0.15s, box-shadow 0.15s;
 }
-.caixa:focus-within { border-color: var(--borda-foco); box-shadow: var(--sombra-lg), var(--foco); }
-.caixa.desativada { opacity: 0.6; }
+.feixe.desativada { opacity: 0.6; animation-play-state: paused; }
 .caixa textarea {
   width: 100%;
   border: none;
